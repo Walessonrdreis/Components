@@ -26,8 +26,10 @@
         constructor(config) {
             this.$container = $(`#${config.containerId}`);
             this.$dateInput = $('#data-selecionada');
+            this.$selectedDatesContainer = $('#datas-selecionadas .selected-dates-list');
             this.options = $.extend({}, Calendar.defaults, config.options);
             this.currentDate = new Date();
+            this.selectedDates = new Set(); // Armazena as datas selecionadas
             this.init();
         }
 
@@ -91,9 +93,10 @@
             // Adiciona os dias do mês
             for (let day = 1; day <= lastDay.getDate(); day++) {
                 const date = new Date(year, month, day);
+                const dateStr = date.toISOString().split('T')[0];
                 const $dayElement = $('<div>', {
                     class: 'calendar-day',
-                    'data-date': date.toISOString(),
+                    'data-date': dateStr,
                     text: day
                 });
 
@@ -101,52 +104,40 @@
                     $dayElement.addClass('today');
                 }
 
+                if (this.selectedDates.has(dateStr)) {
+                    $dayElement.addClass('selected');
+                }
+
                 $daysContainer.append($dayElement);
             }
+
+            this.markHolidays();
         }
 
         setupEventListeners() {
-            let clickData = {
-                lastClick: 0,
-                lastElement: null
-            };
-
             this.$container
                 .on('click', '.prev-month', () => {
                     this.currentDate.setMonth(this.currentDate.getMonth() - 1);
                     this.updateCalendar();
-                    this.markHolidays();
                 })
                 .on('click', '.next-month', () => {
                     this.currentDate.setMonth(this.currentDate.getMonth() + 1);
                     this.updateCalendar();
-                    this.markHolidays();
                 })
                 .on('click', '.calendar-day', (e) => {
                     const $dayElement = $(e.currentTarget);
-                    const date = $dayElement.data('date');
-                    if (!date) return;
+                    const dateStr = $dayElement.data('date');
+                    if (!dateStr) return;
 
-                    const currentTime = $.now();
-                    const isFeriado = $dayElement.hasClass('feriado');
-
-                    if (isFeriado) {
-                        const isDoubleClick = (
-                            $dayElement.get(0) === clickData.lastElement &&
-                            currentTime - clickData.lastClick <= this.options.doubleClickDelay
-                        );
-
-                        clickData = {
-                            lastClick: currentTime,
-                            lastElement: $dayElement.get(0)
-                        };
-
-                        if (!isDoubleClick) return;
+                    if (this.selectedDates.has(dateStr)) {
+                        this.selectedDates.delete(dateStr);
+                        $dayElement.removeClass('selected');
+                    } else {
+                        this.selectedDates.add(dateStr);
+                        $dayElement.addClass('selected');
                     }
 
-                    const selectedDate = new Date(date);
-                    const formattedDate = $.datepicker.formatDate(this.options.dateFormat, selectedDate);
-                    this.$dateInput.val(formattedDate).trigger('change');
+                    this.updateSelectedDatesList();
                 });
         }
 
@@ -186,6 +177,44 @@
             const dia = String(date.getDate()).padStart(2, '0');
             const mes = String(date.getMonth() + 1).padStart(2, '0');
             return `${dia}-${mes}`;
+        }
+
+        updateSelectedDatesList() {
+            if (!this.$selectedDatesContainer.length) return;
+            
+            this.$selectedDatesContainer.empty();
+            
+            const sortedDates = Array.from(this.selectedDates).sort();
+            
+            sortedDates.forEach(dateStr => {
+                const date = new Date(dateStr);
+                const formattedDate = date.toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+
+                const $dateItem = $('<div>', {
+                    class: 'selected-date-item'
+                }).append(
+                    $('<span>', { text: formattedDate }),
+                    $('<button>', {
+                        class: 'remove-date',
+                        'data-date': dateStr,
+                        html: '<i class="fas fa-times"></i>'
+                    })
+                );
+
+                this.$selectedDatesContainer.append($dateItem);
+            });
+
+            // Adiciona evento para remover datas
+            this.$selectedDatesContainer.on('click', '.remove-date', (e) => {
+                const dateStr = $(e.currentTarget).data('date');
+                this.selectedDates.delete(dateStr);
+                this.updateCalendar();
+                this.updateSelectedDatesList();
+            });
         }
     }
 
