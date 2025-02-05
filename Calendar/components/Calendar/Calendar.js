@@ -30,6 +30,9 @@
             this.options = $.extend({}, Calendar.defaults, config.options);
             this.currentDate = new Date();
             this.selectedDates = new Set(); // Armazena as datas selecionadas
+            this.defaultTime = '09:00';
+            this.useDefaultTime = false;
+            this.selectedDateTimes = new Map(); // Armazena data -> horário
             this.init();
         }
 
@@ -139,6 +142,34 @@
 
                     this.updateSelectedDatesList();
                 });
+
+            // Listener para o toggle de horário padrão
+            $('#useDefaultTime').on('change', (e) => {
+                this.useDefaultTime = e.target.checked;
+                if (this.useDefaultTime) {
+                    this.defaultTime = $('#defaultTime').val();
+                    this.applyDefaultTimeToAll();
+                }
+                this.updateSelectedDatesList();
+                
+                // Atualiza visual dos ícones e horários
+                if (this.useDefaultTime) {
+                    $('.time-icon').addClass('disabled');
+                    $('.selected-time').addClass('disabled');
+                } else {
+                    $('.time-icon').removeClass('disabled');
+                    $('.selected-time').removeClass('disabled');
+                }
+            });
+
+            // Listener para mudança no horário padrão
+            $('#defaultTime').on('change', (e) => {
+                this.defaultTime = e.target.value;
+                if (this.useDefaultTime) {
+                    this.applyDefaultTimeToAll();
+                    this.updateSelectedDatesList();
+                }
+            });
         }
 
         setupHolidayObserver() {
@@ -179,6 +210,12 @@
             return `${dia}-${mes}`;
         }
 
+        applyDefaultTimeToAll() {
+            this.selectedDates.forEach(dateStr => {
+                this.selectedDateTimes.set(dateStr, this.defaultTime);
+            });
+        }
+
         updateSelectedDatesList() {
             if (!this.$selectedDatesContainer.length) return;
             
@@ -186,7 +223,6 @@
             
             const sortedDates = Array.from(this.selectedDates).sort();
             
-            // Adiciona ou remove a classe baseado na existência de datas selecionadas
             if (sortedDates.length > 0) {
                 this.$container.closest('.calendar-container').addClass('has-selected-dates');
             } else {
@@ -201,10 +237,22 @@
                     year: 'numeric'
                 });
 
+                const time = this.selectedDateTimes.get(dateStr) || this.defaultTime;
+
                 const $dateItem = $('<div>', {
                     class: 'selected-date-item'
                 }).append(
-                    $('<span>', { text: formattedDate }),
+                    $('<div>', { class: 'date-time-info' }).append(
+                        $('<span>', { text: formattedDate }),
+                        $('<span>', { 
+                            class: `selected-time ${this.useDefaultTime ? 'disabled' : ''}`,
+                            text: time 
+                        }),
+                        $('<i>', {
+                            class: `fas fa-clock time-icon ${this.useDefaultTime ? 'disabled' : ''}`,
+                            'data-date': dateStr
+                        })
+                    ),
                     $('<button>', {
                         class: 'remove-date',
                         'data-date': dateStr,
@@ -215,12 +263,59 @@
                 this.$selectedDatesContainer.append($dateItem);
             });
 
-            // Adiciona evento para remover datas
+            // Adiciona eventos para os ícones de relógio
+            this.$selectedDatesContainer.on('click', '.time-icon:not(.disabled)', (e) => {
+                const dateStr = $(e.currentTarget).data('date');
+                this.showTimePopup($(e.currentTarget), dateStr);
+            });
+
+            // Mantém o evento de remoção
             this.$selectedDatesContainer.on('click', '.remove-date', (e) => {
                 const dateStr = $(e.currentTarget).data('date');
                 this.selectedDates.delete(dateStr);
+                this.selectedDateTimes.delete(dateStr);
                 this.updateCalendar();
                 this.updateSelectedDatesList();
+            });
+        }
+
+        showTimePopup($icon, dateStr) {
+            // Remove qualquer popup existente
+            $('.time-popup').remove();
+
+            const currentTime = this.selectedDateTimes.get(dateStr) || this.defaultTime;
+            
+            const $popup = $('<div>', {
+                class: 'time-popup active'
+            }).append(
+                $('<input>', {
+                    type: 'time',
+                    class: 'time-input',
+                    value: currentTime
+                }),
+                $('<button>', {
+                    text: 'Confirmar',
+                    click: (e) => {
+                        const newTime = $(e.target).siblings('.time-input').val();
+                        this.selectedDateTimes.set(dateStr, newTime);
+                        this.updateSelectedDatesList();
+                        $popup.remove();
+                    }
+                })
+            );
+
+            $popup.css({
+                top: $icon.offset().top + 25,
+                left: $icon.offset().left
+            });
+
+            $('body').append($popup);
+
+            // Fecha o popup ao clicar fora
+            $(document).one('click', (e) => {
+                if (!$(e.target).closest('.time-popup, .time-icon').length) {
+                    $popup.remove();
+                }
             });
         }
     }

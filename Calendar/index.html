@@ -18,13 +18,13 @@
         src="https://cdnjs.cloudflare.com/ajax/libs/jquery-throttle-debounce/1.1/jquery.ba-throttle-debounce.min.js"></script>
 
     <style>
-       
+
     </style>
 </head>
 
 <body>
     <div class="main-container">
-       
+
 
         <!-- Container do Calendário -->
         <div class="calendar-container">
@@ -32,6 +32,19 @@
 
             <!-- Container das Datas Selecionadas -->
             <div id="datas-selecionadas" class="selected-dates-container">
+                <div class="time-control-container">
+                    <div class="default-time-control">
+                        <label for="defaultTime">Horário padrão:
+                            <input type="time" class="default-time-input" id="defaultTime" value="09:00">
+                        </label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="useDefaultTime">
+                            <span class="toggle-slider"></span>
+                            <span class="sr-only">Usar horário padrão</span>
+                        </label>
+                        <span>Usar horário padrão</span>
+                    </div>
+                </div>
                 <h3>Datas Selecionadas</h3>
                 <div class="selected-dates-list"></div>
             </div>
