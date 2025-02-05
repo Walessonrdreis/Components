@@ -8,6 +8,7 @@
 
     <!-- CSS -->
     <link rel="stylesheet" href="components/Calendar/Calendar.css">
+    <link rel="stylesheet" href="components/AlunosList/AlunosList.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 
@@ -18,13 +19,106 @@
         src="https://cdnjs.cloudflare.com/ajax/libs/jquery-throttle-debounce/1.1/jquery.ba-throttle-debounce.min.js"></script>
 
     <style>
+        .form-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
 
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        .btn-cadastrar {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.2s;
+        }
+
+        .btn-cadastrar:hover {
+            background: #0052a3;
+        }
+
+        .info-aluno-container {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #0066cc;
+        }
+
+        .info-aluno {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nome-aluno {
+            font-weight: 500;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .tipo-aula {
+            background: #0066cc;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .info-aluno-container:empty {
+            display: none;
+        }
     </style>
 </head>
 
 <body>
     <div class="main-container">
-
+        <!-- Novo formulário -->
+        <div class="form-container">
+            <div class="form-group">
+                <label for="nome">Nome do Aluno:</label>
+                <input type="text" id="nome" name="nome" required>
+            </div>
+            <div class="form-group">
+                <label for="tipo-aula">Tipo de Aula:</label>
+                <select id="tipo-aula" name="tipo-aula" required>
+                    <option value="">Selecione o tipo de aula</option>
+                    <option value="individual">Individual</option>
+                    <option value="grupo">Grupo</option>
+                    <option value="online">Online</option>
+                    <option value="intensivo">Intensivo</option>
+                </select>
+            </div>
+            <button type="button" class="btn-cadastrar" id="btn-cadastrar">
+                Cadastrar Aulas
+            </button>
+        </div>
 
         <!-- Container do Calendário -->
         <div class="calendar-container">
@@ -32,6 +126,12 @@
 
             <!-- Container das Datas Selecionadas -->
             <div id="datas-selecionadas" class="selected-dates-container">
+                <div class="info-aluno-container">
+                    <div class="info-aluno">
+                        <span class="nome-aluno"></span>
+                        <span class="tipo-aula"></span>
+                    </div>
+                </div>
                 <div class="time-control-container">
                     <div class="default-time-control">
                         <label for="defaultTime">Horário padrão:
@@ -49,15 +149,108 @@
                 <div class="selected-dates-list"></div>
             </div>
         </div>
+
+        <!-- Novo componente de lista de alunos -->
+        <div id="lista-alunos" class="alunos-list-container"></div>
     </div>
 
     <!-- Scripts da aplicação -->
     <script src="components/Calendar/Calendar.js"></script>
+    <script src="components/AlunosList/AlunosList.js"></script>
     <script>
         $(document).ready(function () {
-            $('#meu-calendario').calendar({
-                firstDayOfWeek: 0, // Domingo como primeiro dia da semana
+            const calendar = $('#meu-calendario').calendar({
+                firstDayOfWeek: 0,
                 dateFormat: 'dd/mm/yy'
+            }).data('calendar');
+
+            // Inicializa a lista de alunos
+            $('#lista-alunos').alunosList();
+
+            // Função para atualizar informações do aluno
+            function atualizarInfoAluno() {
+                const nome = $('#nome').val();
+                const tipoAula = $('#tipo-aula option:selected').text();
+
+                if (nome || tipoAula) {
+                    $('.nome-aluno').text(nome || 'Aluno não identificado');
+                    $('.tipo-aula').text(tipoAula !== 'Selecione o tipo de aula' ? tipoAula : '');
+                    $('.info-aluno-container').show();
+                } else {
+                    $('.info-aluno-container').hide();
+                }
+            }
+
+            // Atualiza as informações quando houver mudança nos campos
+            $('#nome, #tipo-aula').on('change keyup', atualizarInfoAluno);
+
+            // Função para cadastrar as aulas
+            $('#btn-cadastrar').on('click', function () {
+                const nome = $('#nome').val();
+                const tipoAula = $('#tipo-aula').val();
+                const datasHorarios = [];
+
+                // Coleta todas as datas e horários selecionados
+                calendar.selectedDates.forEach(date => {
+                    const horario = calendar.selectedDateTimes.get(date) || calendar.defaultTime;
+                    datasHorarios.push({
+                        data: date,
+                        horario: horario
+                    });
+                });
+
+                // Validações
+                if (!nome) {
+                    alert('Por favor, insira o nome do aluno');
+                    return;
+                }
+                if (!tipoAula) {
+                    alert('Por favor, selecione o tipo de aula');
+                    return;
+                }
+                if (datasHorarios.length === 0) {
+                    alert('Por favor, selecione pelo menos uma data');
+                    return;
+                }
+
+                // Objeto com todos os dados para enviar ao backend
+                const dadosCadastro = {
+                    nome: nome,
+                    tipoAula: tipoAula,
+                    aulas: datasHorarios
+                };
+
+                // Aqui você pode adicionar a chamada para sua API
+                console.log('Dados para cadastro:', dadosCadastro);
+
+                // Exemplo de envio para API (descomente e ajuste conforme sua API)
+                fetch('api/cadastrar-aulas.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dadosCadastro)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Aulas cadastradas com sucesso!');
+                            // Limpa o formulário
+                            $('#nome').val('');
+                            $('#tipo-aula').val('');
+                            $('.info-aluno-container').hide();
+                            calendar.selectedDates.clear();
+                            calendar.selectedDateTimes.clear();
+                            calendar.updateCalendar();
+                            calendar.updateSelectedDatesList();
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao cadastrar:', error);
+                        alert('Erro ao cadastrar as aulas. Tente novamente.');
+                    });
             });
         });
     </script>
