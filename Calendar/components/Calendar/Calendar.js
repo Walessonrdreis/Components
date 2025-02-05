@@ -186,6 +186,13 @@
             
             const sortedDates = Array.from(this.selectedDates).sort();
             
+            // Adiciona ou remove a classe baseado na existência de datas selecionadas
+            if (sortedDates.length > 0) {
+                this.$container.closest('.calendar-container').addClass('has-selected-dates');
+            } else {
+                this.$container.closest('.calendar-container').removeClass('has-selected-dates');
+            }
+            
             sortedDates.forEach(dateStr => {
                 const date = new Date(dateStr);
                 const formattedDate = date.toLocaleDateString('pt-BR', {

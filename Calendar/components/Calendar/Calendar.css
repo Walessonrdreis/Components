@@ -1,12 +1,42 @@
 .calendar-container {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    flex-direction: row;
+    align-items: flex-start;
     justify-content: center;
-    gap: 1rem;
+    gap: 2rem;
     width: 100%;
     padding: 20px;
     box-sizing: border-box;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Estado inicial - calendário centralizado */
+.calendar-container:not(.has-selected-dates) {
+    justify-content: center;
+}
+
+.calendar-container:not(.has-selected-dates) .selected-dates-container {
+    opacity: 0;
+    width: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Estado com datas selecionadas */
+.calendar-container.has-selected-dates {
+    justify-content: space-between;
+}
+
+.calendar-container.has-selected-dates .calendar {
+    width: 45%;
+    margin: 0;
+}
+
+.calendar-container.has-selected-dates .selected-dates-container {
+    width: 45%;
+    opacity: 1;
+    transition: all 0.3s ease-in-out;
 }
 
 .calendar {
@@ -19,6 +49,7 @@
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
     padding: 20px;
     box-sizing: border-box;
+    transition: all 0.3s ease-in-out;
 }
 
 .calendar-header {
@@ -166,6 +197,7 @@
 .remove-date:hover {
     background-color: #ffeeee;
 }
+
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -230,6 +262,7 @@ h1 {
 .remove-date:hover {
     background-color: #ffeeee;
 }
+
 /* Responsividade para telas pequenas */
 @media screen and (max-width: 480px) {
     .calendar {
@@ -247,5 +280,18 @@ h1 {
 
     .calendar-day {
         font-size: 0.9rem;
+    }
+}
+
+/* Ajuste da responsividade */
+@media screen and (max-width: 768px) {
+    .calendar-container {
+        flex-direction: column;
+    }
+
+    .calendar-container.has-selected-dates .calendar,
+    .calendar-container.has-selected-dates .selected-dates-container {
+        width: 100%;
+        max-width: 600px;
     }
 }
