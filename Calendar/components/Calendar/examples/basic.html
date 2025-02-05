@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendário - Exemplo Básico</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../dist/calendar.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+</head>
+<body>
+    <div class="calendar-container">
+        <div id="meu-calendario"></div>
+    </div>
+
+    <script src="../dist/calendar.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#meu-calendario').calendar();
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,12 @@
+/* Importa todos os componentes */
+@import 'components/header.css';
+@import 'components/weekdays.css';
+@import 'components/days.css';
+@import 'components/input.css';
+
+/* Importa tema padrão */
+@import 'themes/light.css';
+
+.calendar-container {
+    /* ... estilos base ... */
+} 

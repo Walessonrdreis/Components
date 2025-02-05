@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendário</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="components/Calendar/Calendar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+    <!-- Estilos para centralização -->
+    <style>
+        .calendar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            width: 100%;
+            padding: 20px;
+        }
+
+        #data-selecionada {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 200px;
+            text-align: center;
+        }
+
+        #meu-calendario {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        /* Estilo para feriados */
+        .feriado {
+            border: 2px solid #FFD700 !important;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .feriado:hover::after {
+            content: attr(data-feriado);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+        }
+    </style>
+
+    <!-- jQuery e plugins -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/jquery-throttle-debounce/1.1/jquery.ba-throttle-debounce.min.js"></script>
+</head>
+
+<body>
+    <!-- Container para centralizar -->
+    <div class="calendar-container">
+        <!-- Input que receberá a data -->
+        <input type="text" id="data-selecionada" class="date-input" readonly placeholder="Selecione uma data">
+
+        <!-- Div onde o calendário será renderizado -->
+        <div id="meu-calendario" class="calendar"></div>
+    </div>
+
+    <!-- Scripts da aplicação -->
+    <script src="components/Calendar/Calendar.js"></script>
+</body>
+
+</html>

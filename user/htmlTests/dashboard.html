@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Sistema de Usuários</title>
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .welcome {
+            margin: 0;
+        }
+
+        .logout {
+            padding: 8px 16px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .logout:hover {
+            background-color: #c82333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+
+        .admin-actions {
+            display: none;
+        }
+
+        .btn {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 4px;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            color: black;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .success {
+            color: green;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h2 class="welcome">Bem-vindo, <span id="userName"></span>!</h2>
+                <small id="userType"></small>
+            </div>
+            <button class="logout" onclick="logout()">Sair</button>
+        </div>
+
+        <div id="errorMessage" class="error"></div>
+        <div id="successMessage" class="success"></div>
+
+        <h3>Lista de Usuários</h3>
+        <table id="tabelaUsuarios">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Telefone</th>
+                    <th>Tipo</th>
+                    <th>Data Cadastro</th>
+                    <th class="admin-actions">Ações</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        let usuarioLogado = null;
+
+        // Verificar se o usuário está logado
+        fetch('api/verificar_sessao.php')
+            .then(response => response.json())
+            .then(data => {
+                if (!data.logado) {
+                    window.location.href = 'login.html';
+                } else {
+                    usuarioLogado = data.usuario;
+                    document.getElementById('userName').textContent = data.usuario.nome;
+                    document.getElementById('userType').textContent = data.usuario.tipo_usuario === 'admin' ? 'Administrador' : 'Usuário';
+
+                    if (data.usuario.tipo_usuario === 'admin') {
+                        document.querySelectorAll('.admin-actions').forEach(el => el.style.display = 'table-cell');
+                    }
+
+                    carregarUsuarios();
+                }
+            })
+            .catch(() => {
+                window.location.href = 'login.html';
+            });
+
+        // Carregar lista de usuários
+        function carregarUsuarios() {
+            fetch('api/listar_usuarios.php')
+                .then(response => response.json())
+                .then(usuarios => {
+                    const tbody = document.querySelector('#tabelaUsuarios tbody');
+                    tbody.innerHTML = '';
+
+                    usuarios.forEach(usuario => {
+                        const data = new Date(usuario.data_cadastro).toLocaleDateString('pt-BR');
+                        const tr = document.createElement('tr');
+
+                        tr.innerHTML = `
+                            <td>${usuario.nome}</td>
+                            <td>${usuario.email}</td>
+                            <td>${usuario.telefone || '-'}</td>
+                            <td>${usuario.tipo_usuario}</td>
+                            <td>${data}</td>
+                        `;
+
+                        if (usuarioLogado.tipo_usuario === 'admin') {
+                            const tdAcoes = document.createElement('td');
+
+                            if (usuario.id !== usuarioLogado.id) {
+                                if (usuario.tipo_usuario === 'usuario') {
+                                    const btnPromover = document.createElement('button');
+                                    btnPromover.className = 'btn btn-warning';
+                                    btnPromover.textContent = 'Promover';
+                                    btnPromover.onclick = () => alterarTipo(usuario.id, 'admin');
+                                    tdAcoes.appendChild(btnPromover);
+                                } else {
+                                    const btnRebaixar = document.createElement('button');
+                                    btnRebaixar.className = 'btn btn-warning';
+                                    btnRebaixar.textContent = 'Rebaixar';
+                                    btnRebaixar.onclick = () => alterarTipo(usuario.id, 'usuario');
+                                    tdAcoes.appendChild(btnRebaixar);
+                                }
+
+                                const btnExcluir = document.createElement('button');
+                                btnExcluir.className = 'btn btn-danger';
+                                btnExcluir.textContent = 'Excluir';
+                                btnExcluir.onclick = () => excluirUsuario(usuario.id);
+                                tdAcoes.appendChild(btnExcluir);
+                            }
+
+                            tr.appendChild(tdAcoes);
+                        }
+
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(error => console.error('Erro:', error));
+        }
+
+        function excluirUsuario(id) {
+            if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+
+            fetch('api/excluir_usuario.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: id })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('successMessage').style.display = 'block';
+                        document.getElementById('successMessage').textContent = 'Usuário excluído com sucesso!';
+                        carregarUsuarios();
+                    } else {
+                        document.getElementById('errorMessage').style.display = 'block';
+                        document.getElementById('errorMessage').textContent = data.message || 'Erro ao excluir usuário';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('errorMessage').textContent = 'Erro ao excluir usuário';
+                });
+        }
+
+        function alterarTipo(id, novoTipo) {
+            fetch('api/alterar_tipo_usuario.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: id, tipo: novoTipo })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('successMessage').style.display = 'block';
+                        document.getElementById('successMessage').textContent = 'Tipo de usuário alterado com sucesso!';
+                        carregarUsuarios();
+                    } else {
+                        document.getElementById('errorMessage').style.display = 'block';
+                        document.getElementById('errorMessage').textContent = data.message || 'Erro ao alterar tipo de usuário';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('errorMessage').textContent = 'Erro ao alterar tipo de usuário';
+                });
+        }
+
+        // Função de logout
+        function logout() {
+            fetch('api/logout.php')
+                .then(() => {
+                    window.location.href = 'login.html';
+                })
+                .catch(error => console.error('Erro:', error));
+        }
+    </script>
+</body>
+
+</html>

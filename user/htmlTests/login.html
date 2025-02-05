@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Usuários</title>
+    <style>
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="senha">Senha:</label>
+                <input type="password" id="senha" required>
+            </div>
+            <button type="submit">Entrar</button>
+            <div id="errorMessage" class="error"></div>
+        </form>
+        <p style="text-align: center; margin-top: 20px;">
+            Não tem uma conta? <a href="index.html">Cadastre-se</a>
+        </p>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Limpar mensagens anteriores
+            document.getElementById('errorMessage').style.display = 'none';
+
+            const email = document.getElementById('email').value.trim();
+            const senha = document.getElementById('senha').value;
+
+            // Validação básica
+            if (!email) {
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('errorMessage').textContent = 'Por favor, preencha o email';
+                return;
+            }
+            if (!senha) {
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('errorMessage').textContent = 'Por favor, preencha a senha';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('senha', senha);
+
+            fetch('api/login.php', {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin' // Importante para as sessões funcionarem
+            })
+                .then(response => response.json().then(data => ({
+                    ok: response.ok,
+                    status: response.status,
+                    data: data
+                })))
+                .then(({ ok, status, data }) => {
+                    console.log('Resposta do servidor:', data);
+
+                    if (data.success) {
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        document.getElementById('errorMessage').style.display = 'block';
+                        document.getElementById('errorMessage').textContent = data.message || 'Erro ao fazer login';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro completo:', error);
+                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('errorMessage').textContent = 'Erro ao conectar com o servidor';
+                });
+        });
+    </script>
+</body>
+
+</html>
