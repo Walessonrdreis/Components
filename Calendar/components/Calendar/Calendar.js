@@ -96,15 +96,15 @@
 
             // Adiciona os dias do mês
             for (let day = 1; day <= lastDay.getDate(); day++) {
-                const date = new Date(year, month, day);
-                const dateStr = date.toISOString().split('T')[0];
+                const dateStr = this.formatDateString(year, month + 1, day);
+
                 const $dayElement = $('<div>', {
                     class: 'calendar-day',
                     'data-date': dateStr,
                     text: day
                 });
 
-                if (this.isToday(date)) {
+                if (this.isToday(year, month, day)) {
                     $dayElement.addClass('today');
                 }
 
@@ -116,6 +116,17 @@
             }
 
             this.markHolidays();
+        }
+
+        formatDateString(year, month, day) {
+            return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        }
+
+        isToday(year, month, day) {
+            const today = new Date();
+            return day === today.getDate() &&
+                month === (today.getMonth() + 1) &&
+                year === today.getFullYear();
         }
 
         setupEventListeners() {
@@ -152,7 +163,7 @@
                     this.applyDefaultTimeToAll();
                 }
                 this.updateSelectedDatesList();
-                
+
                 // Atualiza visual dos ícones e horários
                 if (this.useDefaultTime) {
                     $('.time-icon').addClass('disabled');
@@ -188,8 +199,8 @@
             const $days = this.$container.find('.calendar-day');
             $days.each((_, day) => {
                 const $day = $(day);
-                const date = new Date($day.data('date'));
-                const key = this.getHolidayKey(date);
+                const dateStr = $day.data('date');
+                const key = this.getHolidayKey(dateStr);
 
                 if (HOLIDAYS[key]) {
                     $day.addClass('feriado')
@@ -198,17 +209,9 @@
             });
         }
 
-        isToday(date) {
-            const today = new Date();
-            return date.getDate() === today.getDate() &&
-                date.getMonth() === today.getMonth() &&
-                date.getFullYear() === today.getFullYear();
-        }
-
-        getHolidayKey(date) {
-            const dia = String(date.getDate()).padStart(2, '0');
-            const mes = String(date.getMonth() + 1).padStart(2, '0');
-            return `${dia}-${mes}`;
+        getHolidayKey(dateStr) {
+            const [_, month, day] = dateStr.split('-');
+            return `${day}-${month}`;
         }
 
         applyDefaultTimeToAll() {
@@ -218,7 +221,8 @@
         }
 
         updateSelectedDatesList() {
-            const $list = this.$container.find('.selected-dates-list');
+            const $container = $('#datas-selecionadas');
+            const $list = $container.find('.selected-dates-list');
             $list.empty();
             const $calendarContainer = $('.calendar-container');
 
@@ -231,53 +235,60 @@
             $calendarContainer.addClass('has-selected-dates');
 
             const datesList = Array.from(this.selectedDates).sort();
-            datesList.forEach(date => {
-                const dateObj = new Date(date);
-                const formattedDate = dateObj.toLocaleDateString('pt-BR', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric'
-                });
+            datesList.forEach(dateStr => {
+                const [year, month, day] = dateStr.split('-');
+                const formattedDate = new Date(year, parseInt(month) - 1, parseInt(day))
+                    .toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    });
 
-                const time = this.selectedDateTimes.get(date) || this.defaultTime;
+                const time = this.selectedDateTimes.get(dateStr) || this.defaultTime;
 
                 const $dateItem = $('<div>', {
-                    class: 'selected-date-item'
+                    class: 'selected-date-item',
+                    style: 'display: flex; justify-content: space-between; align-items: center; margin: 5px 0; padding: 8px; background: #f5f5f5; border-radius: 4px;'
                 }).append(
-                    $('<div>', { class: 'date-time-info' }).append(
-                        $('<span>', { text: formattedDate }),
-                        $('<span>', { 
-                            class: `selected-time ${this.useDefaultTime ? 'disabled' : ''}`,
-                            text: time 
+                    $('<div>', {
+                        class: 'date-info',
+                        style: 'display: flex; align-items: center; gap: 10px;'
+                    }).append(
+                        $('<span>', {
+                            text: formattedDate,
+                            style: 'font-weight: 500;'
                         }),
-                        $('<i>', {
-                            class: `fas fa-clock time-icon ${this.useDefaultTime ? 'disabled' : ''}`,
-                            'data-date': date
+                        $('<input>', {
+                            type: 'time',
+                            value: time,
+                            class: 'time-input',
+                            disabled: this.useDefaultTime,
+                            style: 'padding: 2px 5px; border: 1px solid #ddd; border-radius: 3px;',
+                            on: {
+                                change: (e) => {
+                                    if (!this.useDefaultTime) {
+                                        this.selectedDateTimes.set(dateStr, e.target.value);
+                                    }
+                                }
+                            }
                         })
                     ),
                     $('<button>', {
                         class: 'remove-date',
-                        'data-date': date,
-                        html: '<i class="fas fa-times"></i>'
+                        html: '<i class="fas fa-times"></i>',
+                        style: 'background: none; border: none; color: #ff4444; cursor: pointer; padding: 5px;',
+                        on: {
+                            click: () => {
+                                this.selectedDates.delete(dateStr);
+                                this.selectedDateTimes.delete(dateStr);
+                                this.updateCalendar();
+                                this.updateSelectedDatesList();
+                            }
+                        }
                     })
                 );
 
                 $list.append($dateItem);
-            });
-
-            // Adiciona eventos para os ícones de relógio
-            $list.on('click', '.time-icon:not(.disabled)', (e) => {
-                const dateStr = $(e.currentTarget).data('date');
-                this.showTimePopup($(e.currentTarget), dateStr);
-            });
-
-            // Mantém o evento de remoção
-            $list.on('click', '.remove-date', (e) => {
-                const dateStr = $(e.currentTarget).data('date');
-                this.selectedDates.delete(dateStr);
-                this.selectedDateTimes.delete(dateStr);
-                this.updateCalendar();
-                this.updateSelectedDatesList();
             });
         }
 
@@ -286,7 +297,7 @@
             $('.time-popup').remove();
 
             const currentTime = this.selectedDateTimes.get(dateStr) || this.defaultTime;
-            
+
             const $popup = $('<div>', {
                 class: 'time-popup active'
             }).append(
