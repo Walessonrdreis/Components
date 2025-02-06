@@ -95,6 +95,32 @@
         .info-aluno-container:empty {
             display: none;
         }
+
+        .info-aluno-detalhes {
+            width: 100%;
+        }
+
+        .info-aluno-detalhes h4 {
+            color: #0066cc;
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+        }
+
+        .info-aluno-detalhes p {
+            margin: 5px 0;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .info-aluno-detalhes strong {
+            color: #666;
+            display: inline-block;
+            width: 100px;
+        }
+
+        .time-control-container {
+            margin-top: 20px;
+        }
     </style>
 </head>
 
@@ -107,15 +133,18 @@
                 <input type="text" id="nome" name="nome" required>
             </div>
             <div class="form-group">
-                <label for="tipo-aula">Tipo de Aula:</label>
-                <select id="tipo-aula" name="tipo-aula" required>
-                    <option value="">Selecione o tipo de aula</option>
-                    <option value="individual">Individual</option>
-                    <option value="grupo">Grupo</option>
-                    <option value="online">Online</option>
-                    <option value="intensivo">Intensivo</option>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="disciplina">Disciplina:</label>
+                <select id="disciplina" name="disciplina" class="select-disciplina">
+                    <option value="">Selecione uma disciplina (opcional)</option>
                 </select>
             </div>
+            <button type="button" class="btn-gerenciar-disciplinas">
+                Gerenciar Disciplinas
+            </button>
             <button type="button" class="btn-cadastrar" id="btn-cadastrar">
                 Cadastrar Aulas
             </button>
@@ -129,8 +158,12 @@
             <div id="datas-selecionadas" class="selected-dates-container">
                 <div class="info-aluno-container">
                     <div class="info-aluno">
-                        <span class="nome-aluno"></span>
-                        <span class="tipo-aula"></span>
+                        <div class="info-aluno-detalhes">
+                            <h4>Informações do Aluno</h4>
+                            <p><strong>Nome:</strong> <span class="nome-aluno"></span></p>
+                            <p><strong>Email:</strong> <span class="email-aluno"></span></p>
+                            <p><strong>Disciplina:</strong> <span class="disciplina-aluno"></span></p>
+                        </div>
                     </div>
                 </div>
                 <div class="time-control-container">
@@ -167,29 +200,43 @@
             }).data('calendar');
 
             // Inicializa a lista de alunos
-            $('#lista-alunos').alunosList();
+            const alunosList = $('#lista-alunos').alunosList().data('alunosList');
+            window.alunosList = alunosList;
 
-            // Função para atualizar informações do aluno
-            function atualizarInfoAluno() {
-                const nome = $('#nome').val();
-                const tipoAula = $('#tipo-aula option:selected').text();
+            // Carrega as disciplinas no select
+            function carregarDisciplinas() {
+                fetch('api/listar-disciplinas.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const $select = $('#disciplina');
+                            $select.find('option:not(:first)').remove();
 
-                if (nome || tipoAula) {
-                    $('.nome-aluno').text(nome || 'Aluno não identificado');
-                    $('.tipo-aula').text(tipoAula !== 'Selecione o tipo de aula' ? tipoAula : '');
-                    $('.info-aluno-container').show();
-                } else {
-                    $('.info-aluno-container').hide();
-                }
+                            data.disciplinas.forEach(disciplina => {
+                                $select.append(`<option value="${disciplina.nome}">${disciplina.nome}</option>`);
+                            });
+                        }
+                    })
+                    .catch(error => console.error('Erro ao carregar disciplinas:', error));
             }
 
-            // Atualiza as informações quando houver mudança nos campos
-            $('#nome, #tipo-aula').on('change keyup', atualizarInfoAluno);
+            // Carrega as disciplinas inicialmente
+            carregarDisciplinas();
+
+            // Gerenciar Disciplinas
+            $('.btn-gerenciar-disciplinas').on('click', function () {
+                if (window.alunosList) {
+                    window.alunosList.mostrarModalDisciplinas();
+                } else {
+                    console.error('AlunosList não está inicializado corretamente');
+                }
+            });
 
             // Função para cadastrar as aulas
             $('#btn-cadastrar').on('click', function () {
                 const nome = $('#nome').val();
-                const tipoAula = $('#tipo-aula').val();
+                const email = $('#email').val();
+                const disciplina = $('#disciplina').val();
                 const datasHorarios = [];
 
                 // Coleta todas as datas e horários selecionados
@@ -206,8 +253,8 @@
                     alert('Por favor, insira o nome do aluno');
                     return;
                 }
-                if (!tipoAula) {
-                    alert('Por favor, selecione o tipo de aula');
+                if (!email) {
+                    alert('Por favor, insira o email do aluno');
                     return;
                 }
                 if (datasHorarios.length === 0) {
@@ -218,14 +265,11 @@
                 // Objeto com todos os dados para enviar ao backend
                 const dadosCadastro = {
                     nome: nome,
-                    tipoAula: tipoAula,
+                    email: email,
+                    disciplina: disciplina,
                     aulas: datasHorarios
                 };
 
-                // Aqui você pode adicionar a chamada para sua API
-                console.log('Dados para cadastro:', dadosCadastro);
-
-                // Exemplo de envio para API (descomente e ajuste conforme sua API)
                 fetch('api/cadastrar-aulas.php', {
                     method: 'POST',
                     headers: {
@@ -239,12 +283,14 @@
                             alert('Aulas cadastradas com sucesso!');
                             // Limpa o formulário
                             $('#nome').val('');
-                            $('#tipo-aula').val('');
-                            $('.info-aluno-container').hide();
+                            $('#email').val('');
+                            $('#disciplina').val('');
                             calendar.selectedDates.clear();
                             calendar.selectedDateTimes.clear();
                             calendar.updateCalendar();
                             calendar.updateSelectedDatesList();
+                            // Atualiza a lista de alunos
+                            $('#lista-alunos').data('alunosList').loadAlunos();
                         } else {
                             throw new Error(data.message);
                         }
@@ -253,6 +299,22 @@
                         console.error('Erro ao cadastrar:', error);
                         alert('Erro ao cadastrar as aulas. Tente novamente.');
                     });
+            });
+
+            // Atualiza as informações quando houver mudança nos campos
+            $('#nome, #email, #disciplina').on('change keyup', function () {
+                const nome = $('#nome').val();
+                const email = $('#email').val();
+                const disciplina = $('#disciplina option:selected').text();
+
+                if (nome || email || disciplina) {
+                    $('.nome-aluno').text(nome || 'Não informado');
+                    $('.email-aluno').text(email || 'Não informado');
+                    $('.disciplina-aluno').text(disciplina !== 'Selecione uma disciplina (opcional)' ? disciplina : 'Não informada');
+                    $('.info-aluno-container').show();
+                } else {
+                    $('.info-aluno-container').hide();
+                }
             });
 
             window.pdfViewer = new PdfViewer();

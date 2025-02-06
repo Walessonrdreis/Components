@@ -42,64 +42,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['aluno_id'])) {
                 <style>
                     body {
                         font-family: Arial, sans-serif;
-                        margin: 0;
-                        padding: 20px;
-                        background-color: #f4f4f4;
-                        height: 100%;
+                        line-height: 1.6;
                     }
-                   
                     h1 {
                         color: #0066cc;
                         font-size: 24px;
                         border-bottom: 2px solid #0066cc;
                         padding-bottom: 10px;
                         margin-bottom: 20px;
-
-
                     }
                     .aluno-info {
                         background-color: #f8f9fa;
                         padding: 15px;
-                        margin-bottom: 20px;
-                        border: 1px solid #ddd;
+                        border-radius: 5px;
+                        margin-bottom: 30px;
+                        border-left: 4px solid #0066cc;
                     }
-                    .aluno-info h2 {
+                    .aluno-info p {
+                        margin: 5px 0;
                         color: #333;
-                        font-size: 20px;
-                        margin: 0 0 10px 0;
+                    }
+                    .info-label {
+                        font-weight: bold;
+                        color: #666;
+                        display: inline-block;
+                        width: 120px;
                     }
                     table {
                         width: 100%;
                         border-collapse: collapse;
                         margin-top: 20px;
-                        font-size: 12px;
                     }
                     th {
                         background-color: #0066cc;
-                        color: #ffffff;
-                        font-weight: bold;
-                        padding: 8px;
+                        color: white;
+                        padding: 10px;
                         text-align: left;
-                        border: 1px solid #0052a3;
                     }
                     td {
                         padding: 8px;
-                        border: 1px solid #ddd;
+                        border-bottom: 1px solid #ddd;
                     }
                     tr:nth-child(even) {
-                        background-color: #f9f9f9;
+                        background-color: #f8f9fa;
                     }
+                    .status-agendado { color: #28a745; }
+                    .status-cancelado { color: #dc3545; }
+                    .status-realizado { color: #0066cc; }
                 </style>
             </head>
             <body>
-                <h1>Dados do Aluno</h1>
+                <h1>Relatório de Aulas</h1>
                 <div class="aluno-info">
-                    <h2>' . htmlspecialchars($dados['aluno']['nome']) . '</h2>
-                    <p><strong>Tipo de Aula:</strong> ' . htmlspecialchars($dados['aluno']['tipo_aula']) . '</p>
+                    <h2>Informações do Aluno</h2>
+                    <p><span class="info-label">Nome:</span> ' . htmlspecialchars($dados['aluno']['nome']) . '</p>
+                    <p><span class="info-label">Email:</span> ' . htmlspecialchars($dados['aluno']['email']) . '</p>
+                    <p><span class="info-label">Disciplina:</span> ' . 
+                        (htmlspecialchars($dados['aluno']['disciplina']) ?: 'Não definida') . '</p>
                 </div>
-                
-                <h2 style="color: #0066cc; font-size: 18px;">Aulas Agendadas</h2>
-                <table cellpadding="4">
+
+                <h2>Aulas Agendadas</h2>
+                <table>
                     <thead>
                         <tr>
                             <th width="33%">Data</th>
@@ -108,32 +111,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['aluno_id'])) {
                         </tr>
                     </thead>
                     <tbody>';
-            
+
             foreach ($dados['aulas'] as $aula) {
-                $status_color = '#333333';
-                switch(strtolower($aula['status'])) {
-                    case 'agendado':
-                        $status_color = '#28a745';
-                        break;
-                    case 'cancelado':
-                        $status_color = '#dc3545';
-                        break;
-                    case 'realizado':
-                        $status_color = '#0066cc';
-                        break;
-                }
-                
+                $statusClass = 'status-' . strtolower($aula['status']);
                 $html .= '<tr>
                     <td>' . date('d/m/Y', strtotime($aula['data_aula'])) . '</td>
                     <td>' . date('H:i', strtotime($aula['horario'])) . '</td>
-                    <td style="color: ' . $status_color . '; font-weight: bold;">' . 
-                        ucfirst($aula['status']) . '</td>
+                    <td class="' . $statusClass . '">' . ucfirst($aula['status']) . '</td>
                 </tr>';
             }
-            
+
             $html .= '
                     </tbody>
                 </table>
+                <div style="margin-top: 30px; font-size: 12px; color: #666; text-align: center;">
+                    <p>Relatório gerado em ' . date('d/m/Y H:i') . '</p>
+                </div>
             </body>
             </html>';
             

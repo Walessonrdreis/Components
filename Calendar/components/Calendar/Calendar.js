@@ -33,6 +33,7 @@
             this.defaultTime = '09:00';
             this.useDefaultTime = false;
             this.selectedDateTimes = new Map(); // Armazena data -> horário
+            this.holidayConfirmed = false;
             this.init();
         }
 
@@ -317,6 +318,38 @@
                     $popup.remove();
                 }
             });
+        }
+
+        _onDateClick(date) {
+            const dateStr = $.datepicker.formatDate('yy-mm-dd', date);
+            const holidayName = this._isHoliday(date);
+
+            if (holidayName) {
+                if (!this.holidayConfirmed) {
+                    alert(`Este dia é feriado (${holidayName}). Clique novamente para selecionar mesmo assim.`);
+                    this.holidayConfirmed = true;
+                    return;
+                }
+                this.holidayConfirmed = false;
+            }
+
+            if (this.selectedDates.has(dateStr)) {
+                this.selectedDates.delete(dateStr);
+                this.selectedDateTimes.delete(dateStr);
+            } else {
+                this.selectedDates.add(dateStr);
+                if (this.options.useDefaultTime) {
+                    this.selectedDateTimes.set(dateStr, this.defaultTime);
+                }
+            }
+
+            this.updateCalendar();
+            this.updateSelectedDatesList();
+        }
+
+        _isHoliday(date) {
+            const monthDay = $.datepicker.formatDate('mm-dd', date);
+            return this.HOLIDAYS[monthDay] || null;
         }
     }
 
