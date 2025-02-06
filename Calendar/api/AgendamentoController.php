@@ -109,5 +109,52 @@ class AgendamentoController {
             return ['success' => false, 'message' => $e->getMessage()];
         }
     }
+
+    public function getDadosAlunoPDF($aluno_id) {
+        try {
+            // Busca dados do aluno
+            $stmt = $this->conn->prepare("
+                SELECT 
+                    a.id,
+                    a.nome,
+                    ta.nome as tipo_aula
+                FROM alunos a
+                LEFT JOIN agendamentos ag ON a.id = ag.aluno_id
+                LEFT JOIN tipos_aula ta ON ag.tipo_aula_id = ta.id
+                WHERE a.id = :aluno_id
+                LIMIT 1
+            ");
+            $stmt->bindParam(':aluno_id', $aluno_id);
+            $stmt->execute();
+            $aluno = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$aluno) {
+                throw new Exception('Aluno não encontrado');
+            }
+
+            // Busca aulas do aluno
+            $stmt = $this->conn->prepare("
+                SELECT 
+                    data_aula,
+                    horario,
+                    status
+                FROM agendamentos
+                WHERE aluno_id = :aluno_id
+                ORDER BY data_aula, horario
+            ");
+            $stmt->bindParam(':aluno_id', $aluno_id);
+            $stmt->execute();
+            $aulas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return [
+                'success' => true,
+                'aluno' => $aluno,
+                'aulas' => $aulas
+            ];
+
+        } catch (Exception $e) {
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
+    }
 }
 ?> 

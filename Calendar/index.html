@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="components/AlunosList/AlunosList.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="components/PdfViewer/PdfViewer.css">
 
     <!-- jQuery e plugins -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -157,6 +158,7 @@
     <!-- Scripts da aplicação -->
     <script src="components/Calendar/Calendar.js"></script>
     <script src="components/AlunosList/AlunosList.js"></script>
+    <script src="components/PdfViewer/PdfViewer.js"></script>
     <script>
         $(document).ready(function () {
             const calendar = $('#meu-calendario').calendar({
@@ -252,6 +254,8 @@
                         alert('Erro ao cadastrar as aulas. Tente novamente.');
                     });
             });
+
+            window.pdfViewer = new PdfViewer();
         });
     </script>
 </body>

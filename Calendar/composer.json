@@ -1,0 +1,17 @@
+{
+    "name": "walll/calendar",
+    "autoload": {
+        "psr-4": {
+            "Walll\\Calendar\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Walessonrdreis",
+            "email": "wallllase@hotmail.com"
+        }
+    ],
+    "require": {
+        "tecnickcom/tcpdf": "^6.8"
+    }
+}

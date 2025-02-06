@@ -33,7 +33,7 @@
 
         loadAlunos() {
             this.$container.find('.loading-spinner').show();
-            
+
             fetch('api/listar-alunos.php')
                 .then(response => response.json())
                 .then(data => {
@@ -67,6 +67,9 @@
                             <p class="proxima-aula">Próxima aula: ${this.formatarData(aluno.proxima_aula)}</p>
                         </div>
                         <div class="aluno-actions">
+                            <button class="btn-pdf" title="Visualizar PDF">
+                                <i class="fas fa-file-pdf"></i>
+                            </button>
                             <button class="btn-ver-aulas" title="Ver aulas">
                                 <i class="fas fa-calendar-alt"></i>
                             </button>
@@ -98,11 +101,16 @@
                 const alunoId = $(e.target).closest('.aluno-card').data('aluno-id');
                 this.editarAluno(alunoId);
             });
+
+            this.$container.on('click', '.btn-pdf', (e) => {
+                const alunoId = $(e.target).closest('.aluno-card').data('aluno-id');
+                window.pdfViewer.showPdf(alunoId);
+            });
         }
 
         filterAlunos(searchTerm) {
             const $cards = this.$container.find('.aluno-card');
-            $cards.each(function() {
+            $cards.each(function () {
                 const $card = $(this);
                 const nome = $card.find('h4').text().toLowerCase();
                 if (nome.includes(searchTerm)) {
@@ -137,8 +145,8 @@
     };
 
     // Registra como plugin jQuery
-    $.fn.alunosList = function(options) {
-        return this.each(function() {
+    $.fn.alunosList = function (options) {
+        return this.each(function () {
             if (!$.data(this, 'alunosList')) {
                 $.data(this, 'alunosList', new AlunosList({
                     containerId: this.id,
