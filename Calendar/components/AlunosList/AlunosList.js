@@ -124,7 +124,9 @@
 
         formatarData(data) {
             if (!data) return 'Não agendada';
-            return new Date(data).toLocaleDateString('pt-BR');
+            // Ajusta a data para meio-dia UTC para evitar problemas com fuso horário
+            const date = new Date(data + 'T12:00:00Z');
+            return date.toLocaleDateString('pt-BR');
         }
 
         verAulas(alunoId) {
@@ -145,6 +147,8 @@
         }
 
         mostrarModalAulas(aulas, aluno) {
+            this.currentAlunoId = aluno.id; // Armazena o ID do aluno atual
+
             // Cria o modal se não existir
             if (!document.getElementById('modal-aulas')) {
                 const modalHtml = `
@@ -167,6 +171,7 @@
                 const modal = document.getElementById('modal-aulas');
                 modal.querySelector('.close-modal').addEventListener('click', () => {
                     modal.style.display = 'none';
+                    this.currentAlunoId = null; // Limpa o ID do aluno ao fechar
                 });
             }
 
@@ -180,6 +185,13 @@
                 <p>Disciplina: ${aluno.disciplina || 'Sem disciplina'}</p>
             `;
 
+            this.atualizarTabelaAulas(aulas, modal);
+
+            modal.style.display = 'block';
+        }
+
+        atualizarTabelaAulas(aulas, modal) {
+            const aulasGrid = modal.querySelector('.aulas-grid');
             aulasGrid.innerHTML = `
                 <table>
                     <thead>
@@ -191,29 +203,33 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${aulas.map(aula => `
-                            <tr>
-                                <td>${new Date(aula.data_aula).toLocaleDateString('pt-BR')}</td>
-                                <td>${aula.horario}</td>
-                                <td>
-                                    <select class="status-select" data-aula-id="${aula.id}">
-                                        <option value="agendado" ${aula.status === 'agendado' ? 'selected' : ''}>Agendado</option>
-                                        <option value="realizado" ${aula.status === 'realizado' ? 'selected' : ''}>Realizado</option>
-                                        <option value="cancelado" ${aula.status === 'cancelado' ? 'selected' : ''}>Cancelado</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <button class="btn-excluir" data-aula-id="${aula.id}">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `).join('')}
+                        ${aulas.map(aula => {
+                const date = new Date(aula.data_aula + 'T12:00:00Z');
+                const formattedDate = date.toLocaleDateString('pt-BR');
+                return `
+                                <tr>
+                                    <td>${formattedDate}</td>
+                                    <td>${aula.horario}</td>
+                                    <td>
+                                        <select class="status-select" data-aula-id="${aula.id}">
+                                            <option value="agendado" ${aula.status === 'agendado' ? 'selected' : ''}>Agendado</option>
+                                            <option value="realizado" ${aula.status === 'realizado' ? 'selected' : ''}>Realizado</option>
+                                            <option value="cancelado" ${aula.status === 'cancelado' ? 'selected' : ''}>Cancelado</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <button class="btn-excluir" data-aula-id="${aula.id}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+            }).join('')}
                     </tbody>
                 </table>
             `;
 
-            // Adiciona eventos para atualizar status e excluir
+            // Reaplica os eventos aos novos elementos
             aulasGrid.querySelectorAll('.status-select').forEach(select => {
                 select.addEventListener('change', (e) => {
                     const aulaId = e.target.dataset.aulaId;
@@ -230,8 +246,6 @@
                     }
                 });
             });
-
-            modal.style.display = 'block';
         }
 
         editarAluno(alunoId) {
@@ -253,6 +267,170 @@
         mostrarModalEditar(aluno) {
             let calendarEdit; // Declara a variável no escopo correto
             let isCalendarInitialized = false;
+
+            const initializeCalendar = () => {
+                const calendarConfig = {
+                    firstDayOfWeek: 0,
+                    dateFormat: 'dd/mm/yy',
+                    updateCalendar: function () {
+                        const year = this.currentDate.getFullYear();
+                        const month = this.currentDate.getMonth();
+
+                        // Atualiza o cabeçalho do mês
+                        const monthName = this.currentDate.toLocaleString('pt-BR', { month: 'long' });
+                        this.$container.find('.current-month')
+                            .text(`${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`);
+
+                        const $daysContainer = this.$container.find('.days');
+                        $daysContainer.empty();
+
+                        // Gera os dias do mês
+                        const firstDay = new Date(year, month, 1);
+                        const lastDay = new Date(year, month + 1, 0);
+
+                        // Adiciona os dias vazios no início
+                        let firstDayOfWeek = firstDay.getDay() - this.options.firstDayOfWeek;
+                        if (firstDayOfWeek < 0) firstDayOfWeek += 7;
+
+                        for (let i = 0; i < firstDayOfWeek; i++) {
+                            $daysContainer.append($('<div>'));
+                        }
+
+                        // Adiciona os dias do mês
+                        for (let day = 1; day <= lastDay.getDate(); day++) {
+                            // Ajusta para meio-dia para evitar problemas com fuso horário
+                            const currentDate = new Date(Date.UTC(year, month, day, 12, 0, 0));
+                            const dateStr = currentDate.toISOString().slice(0, 10);
+
+                            const $dayElement = $('<div>', {
+                                class: 'calendar-day',
+                                'data-date': dateStr,
+                                text: day,
+                                style: 'cursor: pointer;'
+                            });
+
+                            if (this.isToday(currentDate)) {
+                                $dayElement.addClass('today');
+                            }
+
+                            if (this.selectedDates.has(dateStr)) {
+                                $dayElement.addClass('selected');
+                            }
+
+                            $daysContainer.append($dayElement);
+                        }
+                    }
+                };
+
+                calendarEdit = $('#calendario-edicao').calendar(calendarConfig).data('calendar');
+
+                // Configura os eventos do calendário
+                calendarEdit.$container
+                    .off()
+                    .on('click', '.prev-month', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const currentMonth = calendarEdit.currentDate.getMonth();
+                        calendarEdit.currentDate = new Date(
+                            calendarEdit.currentDate.getFullYear(),
+                            currentMonth - 1,
+                            1
+                        );
+                        calendarEdit.updateCalendar();
+                        return false; // Impede a propagação do evento
+                    })
+                    .on('click', '.next-month', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const currentMonth = calendarEdit.currentDate.getMonth();
+                        calendarEdit.currentDate = new Date(
+                            calendarEdit.currentDate.getFullYear(),
+                            currentMonth + 1,
+                            1
+                        );
+                        calendarEdit.updateCalendar();
+                        return false; // Impede a propagação do evento
+                    })
+                    .on('click', '.calendar-day', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const $dayElement = $(this);
+                        const dateStr = $dayElement.data('date');
+                        if (!dateStr) return;
+
+                        if (calendarEdit.selectedDates.has(dateStr)) {
+                            calendarEdit.selectedDates.delete(dateStr);
+                            calendarEdit.selectedDateTimes.delete(dateStr);
+                            $dayElement.removeClass('selected');
+                        } else {
+                            calendarEdit.selectedDates.add(dateStr);
+                            if (calendarEdit.useDefaultTime) {
+                                calendarEdit.selectedDateTimes.set(dateStr, calendarEdit.defaultTime);
+                            }
+                            $dayElement.addClass('selected');
+                        }
+
+                        calendarEdit.updateSelectedDatesList();
+                    });
+
+                // Adiciona método para atualizar a lista de datas selecionadas
+                calendarEdit.updateSelectedDatesList = function () {
+                    const $list = this.$container.find('.selected-dates-list');
+                    $list.empty();
+
+                    if (this.selectedDates.size === 0) {
+                        $list.html('<p>Nenhuma data selecionada</p>');
+                        return;
+                    }
+
+                    const datesList = Array.from(this.selectedDates).sort();
+                    datesList.forEach(dateStr => {
+                        const date = new Date(dateStr + 'T12:00:00Z');
+                        const formattedDate = date.toLocaleDateString('pt-BR');
+                        const time = this.selectedDateTimes.get(dateStr) || this.defaultTime;
+
+                        const $dateItem = $('<div>', {
+                            class: 'selected-date-item',
+                            style: 'display: flex; justify-content: space-between; align-items: center; margin: 5px 0; padding: 8px; background: #f5f5f5; border-radius: 4px;'
+                        }).append(
+                            $('<div>', {
+                                class: 'date-info',
+                                style: 'display: flex; align-items: center; gap: 10px;'
+                            }).append(
+                                $('<span>', {
+                                    text: formattedDate,
+                                    style: 'font-weight: 500;'
+                                }),
+                                $('<input>', {
+                                    type: 'time',
+                                    value: time,
+                                    class: 'time-input',
+                                    disabled: this.useDefaultTime,
+                                    style: 'padding: 2px 5px; border: 1px solid #ddd; border-radius: 3px;'
+                                }).on('change', (e) => {
+                                    if (!this.useDefaultTime) {
+                                        this.selectedDateTimes.set(dateStr, e.target.value);
+                                    }
+                                })
+                            ),
+                            $('<button>', {
+                                class: 'remove-date',
+                                html: '<i class="fas fa-times"></i>',
+                                style: 'background: none; border: none; color: #ff4444; cursor: pointer; padding: 5px;'
+                            }).on('click', () => {
+                                this.selectedDates.delete(dateStr);
+                                this.selectedDateTimes.delete(dateStr);
+                                this.updateCalendar();
+                                this.updateSelectedDatesList();
+                            })
+                        );
+
+                        $list.append($dateItem);
+                    });
+                };
+
+                return calendarEdit;
+            };
 
             if (!document.getElementById('modal-editar')) {
                 const modalHtml = `
@@ -307,38 +485,33 @@
 
                 // Inicializa o calendário de edição
                 setTimeout(() => {
-                    calendarEdit = $('#calendario-edicao').calendar({
-                        firstDayOfWeek: 0,
-                        dateFormat: 'dd/mm/yy',
-                        onRender: function () {
-                            // Ajusta o scroll para o calendário ficar visível
-                            const container = document.querySelector('.modal-editar .modal-body');
-                            const calendar = document.getElementById('calendario-edicao');
-                            if (container && calendar) {
-                                container.scrollTop = calendar.offsetTop - 100;
-                            }
-                        }
-                    }).data('calendar');
-
+                    calendarEdit = initializeCalendar();
                     isCalendarInitialized = true;
-
-                    // Move os eventos para dentro do setTimeout
-                    const modal = document.getElementById('modal-editar');
 
                     // Eventos do horário padrão
                     $('#useDefaultTimeEdit').on('change', function () {
                         if (calendarEdit) {
                             calendarEdit.useDefaultTime = this.checked;
+                            if (this.checked) {
+                                calendarEdit.defaultTime = $('#defaultTimeEdit').val();
+                                calendarEdit.applyDefaultTimeToAll();
+                            }
+                            calendarEdit.updateSelectedDatesList();
                         }
                     });
 
                     $('#defaultTimeEdit').on('change', function () {
                         if (calendarEdit) {
                             calendarEdit.defaultTime = this.value;
+                            if (calendarEdit.useDefaultTime) {
+                                calendarEdit.applyDefaultTimeToAll();
+                                calendarEdit.updateSelectedDatesList();
+                            }
                         }
                     });
 
                     // Adiciona o evento de submit após o calendário estar pronto
+                    const modal = document.getElementById('modal-editar');
                     modal.querySelector('#form-editar-aluno').addEventListener('submit', (e) => {
                         e.preventDefault();
                         if (calendarEdit) {
@@ -358,11 +531,10 @@
                     modal.style.display = 'none';
                 });
             } else {
-                // Se o modal já existe, recarrega as datas
-                const existingCalendar = $('#calendario-edicao').data('calendar');
-                if (existingCalendar) {
-                    this.carregarDatasExistentes(aluno.id, existingCalendar);
-                }
+                // Se o modal já existe, reinicializa o calendário
+                calendarEdit = initializeCalendar();
+                this.carregarDatasExistentes(aluno.id, calendarEdit);
+                document.getElementById('modal-editar').style.display = 'block';
             }
 
             // Carrega as disciplinas antes de preencher o formulário
@@ -392,7 +564,11 @@
                         calendar.selectedDateTimes.clear();
 
                         data.aulas.forEach(aula => {
-                            const dateStr = aula.data_aula;
+                            // Ajusta a data para meio-dia UTC para evitar problemas com fuso horário
+                            const [year, month, day] = aula.data_aula.split('-').map(Number);
+                            const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+                            const dateStr = date.toISOString().slice(0, 10);
+
                             calendar.selectedDates.add(dateStr);
                             calendar.selectedDateTimes.set(dateStr, aula.horario);
                         });
@@ -411,10 +587,10 @@
 
             // Coleta todas as datas e horários selecionados
             const aulas = [];
-            calendar.selectedDates.forEach(date => {
+            calendar.selectedDates.forEach(dateStr => {
                 aulas.push({
-                    data: date,
-                    horario: calendar.selectedDateTimes.get(date) || calendar.defaultTime
+                    data: dateStr,
+                    horario: calendar.selectedDateTimes.get(dateStr) || calendar.defaultTime
                 });
             });
 
@@ -433,9 +609,25 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert('Aluno atualizado com sucesso!');
+                        // Atualiza a lista de alunos
                         this.loadAlunos();
-                        document.getElementById('modal-editar').style.display = 'none';
+
+                        // Fecha o modal
+                        const modal = document.getElementById('modal-editar');
+                        if (modal) {
+                            modal.style.display = 'none';
+
+                            // Limpa o calendário
+                            calendar.selectedDates.clear();
+                            calendar.selectedDateTimes.clear();
+                            calendar.updateCalendar();
+                            calendar.updateSelectedDatesList();
+
+                            // Remove o modal para forçar uma reinicialização na próxima edição
+                            modal.remove();
+                        }
+
+                        alert('Aluno atualizado com sucesso!');
                     } else {
                         throw new Error(data.message);
                     }
@@ -472,6 +664,8 @@
         }
 
         excluirAula(aulaId) {
+            const modal = document.getElementById('modal-aulas');
+
             fetch('api/excluir-aula.php', {
                 method: 'POST',
                 headers: {
@@ -484,9 +678,20 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        // Recarrega as aulas do aluno atual
+                        if (this.currentAlunoId) {
+                            fetch(`api/buscar-aulas-aluno.php?aluno_id=${this.currentAlunoId}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        // Atualiza a tabela de aulas
+                                        this.atualizarTabelaAulas(data.aulas, modal);
+                                        // Atualiza a lista de alunos para refletir as mudanças
+                                        this.loadAlunos();
+                                    }
+                                });
+                        }
                         alert('Aula excluída com sucesso!');
-                        // Recarrega a lista de aulas
-                        this.verAulas(this.currentAlunoId);
                     } else {
                         throw new Error(data.message);
                     }
