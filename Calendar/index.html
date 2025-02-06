@@ -211,6 +211,7 @@
 
             .calendar-container {
                 flex-direction: column;
+                gap: 10px;
             }
 
             .calendar-container.has-selected-dates #meu-calendario,
@@ -220,15 +221,24 @@
 
             #meu-calendario {
                 width: 100%;
-                margin-bottom: 20px;
             }
 
             .selected-dates-container {
                 width: 100%;
             }
 
-            .form-container {
-                margin-bottom: 15px;
+            .alunos-list-container {
+                margin-top: 20px;
+            }
+
+            .form-container,
+            .calendar-container,
+            .alunos-list-container {
+                margin-bottom: 20px;
+              
+            }
+            .calendar-container{
+                max-height: 40vh;
             }
         }
     </style>
