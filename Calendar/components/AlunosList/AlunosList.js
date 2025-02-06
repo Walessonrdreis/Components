@@ -68,13 +68,13 @@
                             <p class="proxima-aula">Próxima aula: ${this.formatarData(aluno.proxima_aula)}</p>
                         </div>
                         <div class="aluno-actions">
-                            <button class="btn-pdf" title="Visualizar PDF">
+                            <button class="btn-pdf" data-tooltip="Visualizar PDF">
                                 <i class="fas fa-file-pdf"></i>
                             </button>
-                            <button class="btn-ver-aulas" title="Ver aulas">
+                            <button class="btn-ver-aulas" data-tooltip="Ver aulas">
                                 <i class="fas fa-calendar-alt"></i>
                             </button>
-                            <button class="btn-editar" title="Editar">
+                            <button class="btn-editar" data-tooltip="Editar aluno">
                                 <i class="fas fa-edit"></i>
                             </button>
                         </div>
@@ -480,56 +480,53 @@
         }
 
         mostrarModalDisciplinas() {
-            if (!document.getElementById('modal-disciplinas')) {
-                const modalHtml = `
-                    <div id="modal-disciplinas" class="modal-disciplinas">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h2>Gerenciar Disciplinas</h2>
-                                <button class="close-modal">&times;</button>
-                            </div>
-                            <div class="modal-body">
-                                <form id="form-disciplina">
-                                    <div class="form-group">
-                                        <label for="nova-disciplina">Nova Disciplina:</label>
-                                        <input type="text" id="nova-disciplina" required>
-                                        <button type="submit" class="btn-adicionar">Adicionar</button>
-                                    </div>
-                                </form>
-                                <div class="disciplinas-lista">
-                                    <h3>Disciplinas Cadastradas</h3>
-                                    <ul class="lista-disciplinas"></ul>
+            // Toggle: se já existe o modal, remove e retorna
+            const existingModal = document.getElementById('modal-disciplinas');
+            if (existingModal) {
+                existingModal.remove();
+                return;
+            }
+
+            const modalHtml = `
+                <div id="modal-disciplinas" class="modal-disciplinas">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Gerenciar Disciplinas</h2>
+                            <button class="close-modal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="form-disciplina">
+                                <div class="form-group">
+                                    <label for="nova-disciplina">Nova Disciplina:</label>
+                                    <input type="text" id="nova-disciplina" required>
+                                    <button type="submit" class="btn-adicionar">Adicionar</button>
                                 </div>
+                            </form>
+                            <div class="disciplinas-lista">
+                                <h3>Disciplinas Cadastradas</h3>
+                                <ul class="lista-disciplinas"></ul>
                             </div>
                         </div>
                     </div>
-                `;
-                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                </div>
+            `;
 
-                // Eventos do modal
-                const modal = document.getElementById('modal-disciplinas');
+            const btnGerenciar = document.querySelector('.btn-gerenciar-disciplinas');
+            btnGerenciar.insertAdjacentHTML('afterend', modalHtml);
 
-                modal.querySelector('.close-modal').addEventListener('click', () => {
-                    modal.style.display = 'none';
-                });
+            const modal = document.getElementById('modal-disciplinas');
 
-                modal.querySelector('#form-disciplina').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.adicionarDisciplina(e.target);
-                });
+            // Adiciona evento para fechar no X
+            modal.querySelector('.close-modal').addEventListener('click', () => {
+                modal.remove();
+            });
 
-                // Delegação de eventos para remoção
-                modal.querySelector('.lista-disciplinas').addEventListener('click', (e) => {
-                    const button = e.target.closest('.btn-remover-disciplina');
-                    if (button) {
-                        const disciplinaId = button.dataset.id;
-                        this.removerDisciplina(disciplinaId);
-                    }
-                });
-            }
+            modal.querySelector('#form-disciplina').addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.adicionarDisciplina(e.target);
+            });
 
             this.atualizarListaDisciplinas();
-            document.getElementById('modal-disciplinas').style.display = 'block';
         }
 
         atualizarListaDisciplinas() {
@@ -541,11 +538,19 @@
                         lista.innerHTML = data.disciplinas.map(disciplina => `
                             <li>
                                 ${disciplina.nome}
-                                <button class="btn-remover-disciplina" data-id="${disciplina.id}">
+                                <button class="btn-remover-disciplina" data-id="${disciplina.id}" title="Remover Disciplina">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </li>
                         `).join('');
+
+                        // Adiciona evento de remoção para os novos botões
+                        lista.querySelectorAll('.btn-remover-disciplina').forEach(btn => {
+                            btn.addEventListener('click', (e) => {
+                                const disciplinaId = e.target.closest('.btn-remover-disciplina').dataset.id;
+                                this.removerDisciplina(disciplinaId);
+                            });
+                        });
                     }
                 });
         }
