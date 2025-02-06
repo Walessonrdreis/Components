@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Calendário com Múltipla Seleção</title>
 
     <!-- CSS -->
@@ -120,6 +120,29 @@
 
         .time-control-container {
             margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 10px;
+            }
+
+            .calendar-container {
+                flex-direction: column;
+            }
+
+            #meu-calendario {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+
+            .selected-dates-container {
+                width: 100%;
+            }
+
+            .form-container {
+                margin-bottom: 15px;
+            }
         }
     </style>
 </head>

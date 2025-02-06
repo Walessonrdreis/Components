@@ -520,8 +520,9 @@
 
                 // Delegação de eventos para remoção
                 modal.querySelector('.lista-disciplinas').addEventListener('click', (e) => {
-                    if (e.target.classList.contains('btn-remover')) {
-                        const disciplinaId = e.target.dataset.id;
+                    const button = e.target.closest('.btn-remover-disciplina');
+                    if (button) {
+                        const disciplinaId = button.dataset.id;
                         this.removerDisciplina(disciplinaId);
                     }
                 });
@@ -540,7 +541,7 @@
                         lista.innerHTML = data.disciplinas.map(disciplina => `
                             <li>
                                 ${disciplina.nome}
-                                <button class="btn-remover" data-id="${disciplina.id}">
+                                <button class="btn-remover-disciplina" data-id="${disciplina.id}">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </li>

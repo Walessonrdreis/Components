@@ -8,8 +8,9 @@
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 1000;
 }
+
 .pdf-modal-body {
-   
+
     height: calc(100% - 100px);
 }
 
@@ -79,4 +80,36 @@
     height: calc(100% - 100px);
     border: none;
     border-radius: 4px;
-} 
+}
+
+/* Adicione estas regras de mídia */
+
+@media (max-width: 1024px) {
+    .pdf-modal-content {
+        width: 95%;
+        height: 95%;
+    }
+}
+
+@media (max-width: 768px) {
+    .pdf-modal-content {
+        width: 98%;
+        height: 98%;
+        margin: 1% auto;
+        padding: 10px;
+    }
+
+    .pdf-toolbar {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .pdf-toolbar button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .pdf-frame {
+        height: calc(100% - 150px);
+    }
+}
