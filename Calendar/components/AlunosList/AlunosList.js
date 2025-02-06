@@ -251,6 +251,9 @@
         }
 
         mostrarModalEditar(aluno) {
+            let calendarEdit; // Declara a variável no escopo correto
+            let isCalendarInitialized = false;
+
             if (!document.getElementById('modal-editar')) {
                 const modalHtml = `
                     <div id="modal-editar" class="modal-editar">
@@ -303,30 +306,63 @@
                 document.body.insertAdjacentHTML('beforeend', modalHtml);
 
                 // Inicializa o calendário de edição
-                const calendarEdit = $('#calendario-edicao').calendar({
-                    firstDayOfWeek: 0,
-                    dateFormat: 'dd/mm/yy'
-                }).data('calendar');
+                setTimeout(() => {
+                    calendarEdit = $('#calendario-edicao').calendar({
+                        firstDayOfWeek: 0,
+                        dateFormat: 'dd/mm/yy',
+                        onRender: function () {
+                            // Ajusta o scroll para o calendário ficar visível
+                            const container = document.querySelector('.modal-editar .modal-body');
+                            const calendar = document.getElementById('calendario-edicao');
+                            if (container && calendar) {
+                                container.scrollTop = calendar.offsetTop - 100;
+                            }
+                        }
+                    }).data('calendar');
+
+                    isCalendarInitialized = true;
+
+                    // Move os eventos para dentro do setTimeout
+                    const modal = document.getElementById('modal-editar');
+
+                    // Eventos do horário padrão
+                    $('#useDefaultTimeEdit').on('change', function () {
+                        if (calendarEdit) {
+                            calendarEdit.useDefaultTime = this.checked;
+                        }
+                    });
+
+                    $('#defaultTimeEdit').on('change', function () {
+                        if (calendarEdit) {
+                            calendarEdit.defaultTime = this.value;
+                        }
+                    });
+
+                    // Adiciona o evento de submit após o calendário estar pronto
+                    modal.querySelector('#form-editar-aluno').addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        if (calendarEdit) {
+                            this.salvarEdicaoAluno(e.target, calendarEdit);
+                        }
+                    });
+
+                    // Carrega as datas existentes no calendário após inicialização
+                    if (calendarEdit) {
+                        this.carregarDatasExistentes(aluno.id, calendarEdit);
+                    }
+                }, 100);
 
                 // Adiciona eventos
                 const modal = document.getElementById('modal-editar');
                 modal.querySelector('.close-modal').addEventListener('click', () => {
                     modal.style.display = 'none';
                 });
-
-                modal.querySelector('#form-editar-aluno').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.salvarEdicaoAluno(e.target, calendarEdit);
-                });
-
-                // Eventos do horário padrão
-                $('#useDefaultTimeEdit').on('change', function () {
-                    calendarEdit.useDefaultTime = this.checked;
-                });
-
-                $('#defaultTimeEdit').on('change', function () {
-                    calendarEdit.defaultTime = this.value;
-                });
+            } else {
+                // Se o modal já existe, recarrega as datas
+                const existingCalendar = $('#calendario-edicao').data('calendar');
+                if (existingCalendar) {
+                    this.carregarDatasExistentes(aluno.id, existingCalendar);
+                }
             }
 
             // Carrega as disciplinas antes de preencher o formulário
@@ -338,19 +374,20 @@
                 modal.querySelector('[name="email"]').value = aluno.email || '';
                 modal.querySelector('[name="disciplina"]').value = aluno.disciplina || '';
 
-                // Carrega as datas existentes no calendário
-                this.carregarDatasExistentes(aluno.id);
-
                 modal.style.display = 'block';
             });
         }
 
-        carregarDatasExistentes(alunoId) {
+        carregarDatasExistentes(alunoId, calendar) {
+            if (!calendar) {
+                console.error('Calendário não inicializado');
+                return;
+            }
+
             fetch(`api/buscar-aulas-aluno.php?aluno_id=${alunoId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        const calendar = $('#calendario-edicao').data('calendar');
                         calendar.selectedDates.clear();
                         calendar.selectedDateTimes.clear();
 
@@ -389,7 +426,7 @@
                 body: JSON.stringify({
                     nome,
                     email,
-                    disciplina: disciplina.toLowerCase(),
+                    disciplina: disciplina,
                     aulas: aulas
                 })
             })

@@ -218,27 +218,28 @@
         }
 
         updateSelectedDatesList() {
-            if (!this.$selectedDatesContainer.length) return;
-            
-            this.$selectedDatesContainer.empty();
-            
-            const sortedDates = Array.from(this.selectedDates).sort();
-            
-            if (sortedDates.length > 0) {
-                this.$container.closest('.calendar-container').addClass('has-selected-dates');
-            } else {
-                this.$container.closest('.calendar-container').removeClass('has-selected-dates');
+            const $list = this.$container.find('.selected-dates-list');
+            $list.empty();
+            const $calendarContainer = $('.calendar-container');
+
+            if (this.selectedDates.size === 0) {
+                $calendarContainer.removeClass('has-selected-dates');
+                $list.html('<p>Nenhuma data selecionada</p>');
+                return;
             }
-            
-            sortedDates.forEach(dateStr => {
-                const date = new Date(dateStr);
-                const formattedDate = date.toLocaleDateString('pt-BR', {
+
+            $calendarContainer.addClass('has-selected-dates');
+
+            const datesList = Array.from(this.selectedDates).sort();
+            datesList.forEach(date => {
+                const dateObj = new Date(date);
+                const formattedDate = dateObj.toLocaleDateString('pt-BR', {
                     day: '2-digit',
                     month: '2-digit',
                     year: 'numeric'
                 });
 
-                const time = this.selectedDateTimes.get(dateStr) || this.defaultTime;
+                const time = this.selectedDateTimes.get(date) || this.defaultTime;
 
                 const $dateItem = $('<div>', {
                     class: 'selected-date-item'
@@ -251,27 +252,27 @@
                         }),
                         $('<i>', {
                             class: `fas fa-clock time-icon ${this.useDefaultTime ? 'disabled' : ''}`,
-                            'data-date': dateStr
+                            'data-date': date
                         })
                     ),
                     $('<button>', {
                         class: 'remove-date',
-                        'data-date': dateStr,
+                        'data-date': date,
                         html: '<i class="fas fa-times"></i>'
                     })
                 );
 
-                this.$selectedDatesContainer.append($dateItem);
+                $list.append($dateItem);
             });
 
             // Adiciona eventos para os ícones de relógio
-            this.$selectedDatesContainer.on('click', '.time-icon:not(.disabled)', (e) => {
+            $list.on('click', '.time-icon:not(.disabled)', (e) => {
                 const dateStr = $(e.currentTarget).data('date');
                 this.showTimePopup($(e.currentTarget), dateStr);
             });
 
             // Mantém o evento de remoção
-            this.$selectedDatesContainer.on('click', '.remove-date', (e) => {
+            $list.on('click', '.remove-date', (e) => {
                 const dateStr = $(e.currentTarget).data('date');
                 this.selectedDates.delete(dateStr);
                 this.selectedDateTimes.delete(dateStr);

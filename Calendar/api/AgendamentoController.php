@@ -289,7 +289,10 @@ class AgendamentoController {
             $this->conn->beginTransaction();
 
             // Verifica se o aluno existe
-            $stmt = $this->conn->prepare("SELECT id FROM alunos WHERE id = :aluno_id");
+            $stmt = $this->conn->prepare("
+                SELECT id FROM alunos 
+                WHERE id = :aluno_id
+            ");
             $stmt->bindParam(':aluno_id', $aluno_id);
             $stmt->execute();
             
@@ -297,27 +300,28 @@ class AgendamentoController {
                 throw new Exception('Aluno não encontrado');
             }
 
-            // Busca o ID do tipo de aula
-            $stmt = $this->conn->prepare("
-                SELECT id FROM tipos_aula 
-                WHERE nome = :tipo_aula
-            ");
-            $stmt->bindParam(':tipo_aula', $dados['tipo_aula']);
-            $stmt->execute();
-            $tipo_aula_id = $stmt->fetchColumn();
-
-            if (!$tipo_aula_id) {
-                throw new Exception('Tipo de aula inválido');
+            // Busca o ID da disciplina se foi informada
+            $disciplina_id = null;
+            if (!empty($dados['disciplina'])) {
+                $stmt = $this->conn->prepare("
+                    SELECT id FROM disciplinas 
+                    WHERE nome = :disciplina
+                ");
+                $stmt->bindParam(':disciplina', $dados['disciplina']);
+                $stmt->execute();
+                $disciplina_id = $stmt->fetchColumn();
             }
 
             // Atualiza os dados do aluno
             $stmt = $this->conn->prepare("
                 UPDATE alunos 
-                SET nome = :nome 
+                SET nome = :nome,
+                    email = :email
                 WHERE id = :aluno_id
             ");
             
             $stmt->bindParam(':nome', $dados['nome']);
+            $stmt->bindParam(':email', $dados['email']);
             $stmt->bindParam(':aluno_id', $aluno_id);
             $stmt->execute();
 
@@ -334,13 +338,13 @@ class AgendamentoController {
             if (isset($dados['aulas']) && !empty($dados['aulas'])) {
                 $stmt = $this->conn->prepare("
                     INSERT INTO agendamentos 
-                    (aluno_id, tipo_aula_id, data_aula, horario) 
-                    VALUES (:aluno_id, :tipo_aula_id, :data_aula, :horario)
+                    (aluno_id, disciplina_id, data_aula, horario) 
+                    VALUES (:aluno_id, :disciplina_id, :data_aula, :horario)
                 ");
 
                 foreach ($dados['aulas'] as $aula) {
                     $stmt->bindParam(':aluno_id', $aluno_id);
-                    $stmt->bindParam(':tipo_aula_id', $tipo_aula_id);
+                    $stmt->bindParam(':disciplina_id', $disciplina_id);
                     $stmt->bindParam(':data_aula', $aula['data']);
                     $stmt->bindParam(':horario', $aula['horario']);
                     $stmt->execute();
