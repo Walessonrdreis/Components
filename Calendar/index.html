@@ -1346,6 +1346,213 @@
                         width: auto;
                     }
                 }
+
+                /* Estilos específicos para o visualizador de PDF */
+                .modal-pdf {
+                    width: 95% !important;
+                    max-width: 1200px !important;
+                    height: 90vh !important;
+                }
+
+                .modal-pdf .modal-content {
+                    height: 100%;
+                    width: 100%;
+                    max-width: none;
+                }
+
+                .modal-pdf .modal-body {
+                    padding: 0;
+                    position: relative;
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .pdf-toolbar {
+                    padding: 15px;
+                    background: var(--light-bg);
+                    border-bottom: 1px solid var(--border-color);
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                }
+
+                .pdf-toolbar button {
+                    padding: 8px 15px;
+                    border-radius: var(--radius);
+                    border: none;
+                    background: white;
+                    color: var(--text-color);
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                    transition: all 0.2s;
+                }
+
+                .pdf-toolbar button:hover {
+                    background: var(--primary-color);
+                    color: white;
+                }
+
+                .pdf-container {
+                    flex: 1;
+                    overflow: auto;
+                    background: #f5f5f5;
+                    padding: 20px;
+                }
+
+                /* Estilos específicos para o modal de edição de aluno */
+                .modal-editar .calendar-edit-container {
+                    background: var(--light-bg);
+                    padding: 20px;
+                    border-radius: var(--radius);
+                    margin-top: 20px;
+                }
+
+                .modal-editar .form-group {
+                    margin-bottom: 20px;
+                }
+
+                .modal-editar .selected-dates-list {
+                    max-height: 300px;
+                    overflow-y: auto;
+                    padding: 10px;
+                    background: white;
+                    border-radius: var(--radius);
+                    margin-top: 15px;
+                }
+
+                .modal-editar .selected-date-item {
+                    background: white;
+                    padding: 12px;
+                    border-radius: var(--radius);
+                    margin-bottom: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                }
+
+                .modal-editar .btn-salvar {
+                    width: 100%;
+                    padding: 12px;
+                    background: var(--primary-color);
+                    color: white;
+                    border: none;
+                    border-radius: var(--radius);
+                    font-weight: 500;
+                    margin-top: 20px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+
+                .modal-editar .btn-salvar:hover {
+                    background: var(--primary-hover);
+                    transform: translateY(-1px);
+                }
+
+                /* Estilos específicos para o modal de gerenciamento de disciplinas */
+                .modal-disciplinas .modal-content {
+                    max-width: 600px;
+                }
+
+                .modal-disciplinas .form-disciplina {
+                    display: flex;
+                    gap: 10px;
+                    margin-bottom: 20px;
+                }
+
+                .modal-disciplinas .form-disciplina input {
+                    flex: 1;
+                    padding: 10px;
+                    border: 1px solid var(--border-color);
+                    border-radius: var(--radius);
+                    font-size: 0.95em;
+                }
+
+                .modal-disciplinas .btn-adicionar {
+                    padding: 10px 20px;
+                    background: var(--primary-color);
+                    color: white;
+                    border: none;
+                    border-radius: var(--radius);
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+
+                .modal-disciplinas .btn-adicionar:hover {
+                    background: var(--primary-hover);
+                }
+
+                .modal-disciplinas .lista-disciplinas {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                    max-height: 300px;
+                    overflow-y: auto;
+                }
+
+                .modal-disciplinas .lista-disciplinas li {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 12px;
+                    background: white;
+                    margin-bottom: 8px;
+                    border-radius: var(--radius);
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                }
+
+                .modal-disciplinas .btn-remover-disciplina {
+                    background: none;
+                    border: none;
+                    color: var(--danger-color);
+                    cursor: pointer;
+                    padding: 5px 10px;
+                    border-radius: var(--radius);
+                    transition: all 0.2s;
+                }
+
+                .modal-disciplinas .btn-remover-disciplina:hover {
+                    background: rgba(220, 53, 69, 0.1);
+                }
+
+                .modal-disciplinas .disciplinas-lista h3 {
+                    margin: 20px 0 15px;
+                    padding-bottom: 10px;
+                    border-bottom: 2px solid var(--border-color);
+                    color: var(--text-color);
+                    font-size: 1.2em;
+                }
+
+                /* Melhorias para dispositivos móveis */
+                @media (max-width: 768px) {
+                    .modal-pdf {
+                        width: 100% !important;
+                        height: 100vh !important;
+                        margin: 0;
+                    }
+
+                    .pdf-toolbar {
+                        flex-wrap: wrap;
+                    }
+
+                    .pdf-toolbar button {
+                        flex: 1;
+                        justify-content: center;
+                    }
+
+                    .modal-editar .form-group,
+                    .modal-disciplinas .form-disciplina {
+                        flex-direction: column;
+                    }
+
+                    .modal-disciplinas .btn-adicionar {
+                        width: 100%;
+                    }
+                }
+            }
+        }
     </style>
 </head>
 
@@ -1428,7 +1635,6 @@
     <!-- Scripts da aplicação -->
     <script src="components/Calendar/Calendar.js"></script>
     <script src="components/AlunosList/AlunosList.js"></script>
-    <script src="components/PdfViewer/PdfViewer.js"></script>
     <script>
         $(document).ready(function () {
             const calendar = $('#meu-calendario').calendar({
@@ -1469,6 +1675,78 @@
                 }
             });
 
+            // Evento do botão cadastrar
+            $('#btn-cadastrar').on('click', function () {
+                const nome = $('#nome').val();
+                const email = $('#email').val();
+                const disciplina = $('#disciplina').val();
+
+                if (!nome) {
+                    alert('Por favor, preencha o nome do aluno.');
+                    return;
+                }
+
+                if (!email) {
+                    alert('Por favor, preencha o email do aluno.');
+                    return;
+                }
+
+                // Coleta as datas e horários selecionados
+                const aulas = [];
+                if (calendar && calendar.selectedDates) {
+                    calendar.selectedDates.forEach(dateStr => {
+                        aulas.push({
+                            data: dateStr,
+                            horario: calendar.selectedDateTimes.get(dateStr) || calendar.defaultTime
+                        });
+                    });
+                }
+
+                // Envia os dados para a API
+                fetch('api/cadastrar-aluno.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nome,
+                        email,
+                        disciplina,
+                        aulas
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Limpa os campos
+                            $('#nome').val('');
+                            $('#email').val('');
+                            $('#disciplina').val('');
+
+                            // Limpa o calendário
+                            if (calendar) {
+                                calendar.selectedDates.clear();
+                                calendar.selectedDateTimes.clear();
+                                calendar.updateCalendar();
+                                calendar.updateSelectedDatesList();
+                            }
+
+                            // Atualiza a lista de alunos
+                            if (window.alunosList) {
+                                window.alunosList.loadAlunos();
+                            }
+
+                            alert('Aluno cadastrado com sucesso!');
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao cadastrar aluno:', error);
+                        alert('Erro ao cadastrar aluno. Tente novamente.');
+                    });
+            });
+
             // Atualiza as informações quando houver mudança nos campos
             $('#nome, #email, #disciplina').on('change keyup', function () {
                 const nome = $('#nome').val();
@@ -1484,68 +1762,60 @@
                     $('.info-aluno-container').hide();
                 }
             });
-
-            window.pdfViewer = new PdfViewer();
         });
     </script>
 
     <!-- Sistema de notificações -->
     <div id="notifications-container" class="notifications-container"></div>
 
-    <script>
-        // Inicializa o sistema de notificações
-        class NotificationSystem {
-            constructor() {
-                this.container = document.getElementById('notifications-container');
-            }
-
-            show(message, type = 'success', duration = 3000) {
-                const notification = document.createElement('div');
-                notification.className = `notification ${type}`;
-
-                const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
-                notification.innerHTML = `
-                    <i class="fas fa-${icon}"></i>
-                    <span>${message}</span>
-                    <button class="notification-close" onclick="this.parentElement.remove()">
-                        <i class="fas fa-times"></i>
+    <!-- Modal de Edição de Aluno -->
+    <div id="modal-editar" class="modal modal-editar">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-user-edit"></i> Editar Aluno</h2>
+                <button class="close-modal" title="Fechar modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-editar-aluno" class="modal-form">
+                    <input type="hidden" name="aluno_id">
+                    <div class="form-group">
+                        <label for="edit-nome"><i class="fas fa-user"></i> Nome do Aluno</label>
+                        <input type="text" id="edit-nome" name="nome" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-email"><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="edit-email" name="email" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-disciplina"><i class="fas fa-book"></i> Disciplina</label>
+                        <select id="edit-disciplina" name="disciplina" class="form-control select-disciplina">
+                            <option value="">Selecione uma disciplina</option>
+                        </select>
+                    </div>
+                    <div class="calendar-edit-container">
+                        <h3><i class="fas fa-calendar-alt"></i> Datas das Aulas</h3>
+                        <div class="default-time-control">
+                            <label for="defaultTimeEdit">
+                                <i class="fas fa-clock"></i> Horário padrão:
+                                <input type="time" id="defaultTimeEdit" value="09:00"
+                                    title="Selecione o horário padrão">
+                            </label>
+                            <label class="toggle-switch" for="useDefaultTimeEdit">
+                                <input type="checkbox" id="useDefaultTimeEdit" title="Usar horário padrão">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>Usar horário padrão</span>
+                        </div>
+                        <div id="calendario-edicao"></div>
+                        <div class="selected-dates-list"></div>
+                    </div>
+                    <button type="submit" class="btn-salvar">
+                        <i class="fas fa-save"></i> Salvar Alterações
                     </button>
-                `;
-
-                this.container.appendChild(notification);
-
-                setTimeout(() => notification.classList.add('show'), 10);
-
-                if (duration > 0) {
-                    setTimeout(() => {
-                        notification.classList.add('hide');
-                        setTimeout(() => notification.remove(), 300);
-                    }, duration);
-                }
-            }
-
-            success(message, duration = 3000) {
-                this.show(message, 'success', duration);
-            }
-
-            error(message, duration = 3000) {
-                this.show(message, 'error', duration);
-            }
-
-            warning(message, duration = 3000) {
-                this.show(message, 'warning', duration);
-            }
-
-            info(message, duration = 3000) {
-                this.show(message, 'info', duration);
-            }
-        }
-
-        const notifications = new NotificationSystem();
-        window.alert = function (message) {
-            notifications.info(message);
-        };
-    </script>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
