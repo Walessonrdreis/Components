@@ -23,17 +23,17 @@
     };
 
     class Calendar {
-        constructor(config) {
-            this.$container = $(`#${config.containerId}`);
+        constructor(element, options) {
+            this.$container = $(element);
             this.$dateInput = $('#data-selecionada');
             this.$selectedDatesContainer = $('#datas-selecionadas .selected-dates-list');
-            this.options = $.extend({}, Calendar.defaults, config.options);
-            this.currentDate = new Date();
-            this.selectedDates = new Set(); // Armazena as datas selecionadas
-            this.defaultTime = '09:00';
+            this.options = $.extend({}, Calendar.defaults, options);
+            this.selectedDates = new Set();
+            this.selectedDateTimes = new Map();
+            this.defaultTime = this.options.defaultTime || '09:00';
             this.useDefaultTime = false;
-            this.selectedDateTimes = new Map(); // Armazena data -> horário
             this.holidayConfirmed = false;
+            this.currentDate = new Date();
             this.init();
         }
 
@@ -376,15 +376,26 @@
         dateFormat: 'dd/mm/yy'
     };
 
-    // Registra como plugin jQuery
+    // Adiciona métodos stub se não existirem para atualizar o calendário
+    if (typeof Calendar.prototype.updateCalendar !== 'function') {
+        Calendar.prototype.updateCalendar = function () {
+            // Lógica para atualizar a representação visual do calendário
+            console.log('Atualizando calendário...');
+        };
+    }
+
+    if (typeof Calendar.prototype.updateSelectedDatesList !== 'function') {
+        Calendar.prototype.updateSelectedDatesList = function () {
+            // Lógica para atualizar a lista de datas selecionadas
+            console.log('Atualizando lista de datas selecionadas...');
+        };
+    }
+
+    // Registra o plugin jQuery para o componente Calendar
     $.fn.calendar = function (options) {
         return this.each(function () {
-            if (!$.data(this, 'calendar')) {
-                $.data(this, 'calendar', new Calendar({
-                    containerId: this.id,
-                    options: options
-                }));
-            }
+            const calendar = new Calendar(this, options);
+            $(this).data('calendar', calendar);
         });
     };
 

@@ -12,6 +12,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <link rel="stylesheet" href="components/PdfViewer/PdfViewer.css">
+    <link rel="stylesheet" href="components/FormContainer/FormContainer.css">
+    <link rel="stylesheet" href="components/DisciplinaManager/DisciplinaManager.css">
+    <link rel="stylesheet" href="components/Calendar/SelectedDates.css">
+    <link rel="stylesheet" href="index.css">
 
     <!-- jQuery e plugins -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -23,15 +27,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="index.css">
 
-    
+    <script src="components/FormContainer/FormContainer.js"></script>
+    <script src="components/DisciplinaManager/DisciplinaManager.js"></script>
+    <script src="components/Calendar/SelectedDates.js"></script>
 </head>
 
 <body>
     <div class="main-container">
-        <!-- Novo formulário -->
-        <div class="form-container">
+        <!-- Novo componente de formulário -->
+        <div id="form-container" class="form-container">
             <h2 class="section-title">Cadastrar Novo Aluno</h2>
             <div class="form-group">
                 <label for="nome"><i class="fas fa-user"></i> Nome do Aluno:</label>
@@ -47,13 +52,29 @@
                     <option value="">Selecione uma disciplina (opcional)</option>
                 </select>
             </div>
-            <button type="button" class="btn-gerenciar-disciplinas">
-                <i class="fas fa-cog"></i> Gerenciar Disciplinas
+            <button type="button" id="toggle-disciplina-manager">
+                <i class="fas fa-cogs"></i> Gerenciar Disciplinas
             </button>
+            <div id="disciplina-manager" class="disciplina-manager">
+                <input type="text" id="nova-disciplina" placeholder="Nova Disciplina">
+                <button type="button" class="btn-adicionar-disciplina">
+                    <i class="fas fa-plus"></i> Adicionar Disciplina
+                </button>
+                <div class="disciplinas-list"></div>
+            </div>
             <button type="button" class="btn-cadastrar" id="btn-cadastrar">
                 <i class="fas fa-user-plus"></i> Cadastrar Aluno
             </button>
         </div>
+
+        <!-- Inicializa os componentes FormContainer e DisciplinaManager -->
+        <script>
+            $(document).ready(function () {
+                $('#form-container').formContainer();
+                $('#disciplina-manager').disciplinaManager();
+                $('#datas-selecionadas').selectedDates();
+            });
+        </script>
 
         <!-- Container do Calendário -->
         <div class="calendar-container">
@@ -98,8 +119,10 @@
                 <h3><i class="fas fa-users"></i> Alunos Cadastrados</h3>
                 <div class="alunos-search">
                     <i class="fas fa-search search-icon"></i>
-                    <input type="text" placeholder="Buscar aluno..." class="search-input">
                 </div>
+            </div>
+            <div class="alunos-list-content">
+                <!-- Conteúdo da lista de alunos -->
             </div>
         </div>
     </div>

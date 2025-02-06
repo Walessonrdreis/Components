@@ -1,0 +1,58 @@
+/* Estilos para o componente SelectedDates */
+.selected-dates-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    width: 100%;
+    /* Garante que ocupe a largura total disponível */
+}
+
+.selected-dates-list {
+    flex-grow: 1;
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    /* Permite rolagem se o conteúdo exceder a altura */
+}
+
+.selected-date-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    margin-bottom: 5px;
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.date-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.time-input {
+    padding: 2px 5px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.remove-date {
+    background: none;
+    border: none;
+    color: #ff4444;
+    cursor: pointer;
+    padding: 5px;
+}
+
+@media (max-width: 768px) {
+    .selected-dates-container {
+        width: 100%;
+        /* Garante que ocupe a largura total disponível em telas menores */
+    }
+}

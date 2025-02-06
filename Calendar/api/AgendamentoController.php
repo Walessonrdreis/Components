@@ -13,47 +13,61 @@ class AgendamentoController {
         try {
             $this->conn->beginTransaction();
 
-            // Insere ou busca o aluno
-            $stmt = $this->conn->prepare("
-                INSERT INTO alunos (nome, email) 
-                VALUES (:nome, :email)
-                ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)
-            ");
-            $stmt->bindParam(':nome', $dados['nome']);
-            $stmt->bindParam(':email', $dados['email']);
-            $stmt->execute();
+            // Sanitiza e valida os dados do aluno
+            $nome = trim($dados['nome'] ?? '');
+            $email = trim($dados['email'] ?? '');
+            if (empty($nome) || empty($email)) {
+                throw new Exception("Nome e email são obrigatórios");
+            }
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                throw new Exception("Email inválido");
+            }
+
+            // Insere ou busca o aluno utilizando parâmetros nomeados
+            $stmt = $this->conn->prepare("INSERT INTO alunos (nome, email) VALUES (:nome, :email) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)");
+            $stmt->execute([
+                ':nome' => $nome,
+                ':email' => $email
+            ]);
             $aluno_id = $this->conn->lastInsertId();
 
             $disciplina_id = null;
             if (!empty($dados['disciplina'])) {
-                // Busca o ID da disciplina se foi informada
-                $stmt = $this->conn->prepare("
-                    SELECT id FROM disciplinas 
-                    WHERE nome = :disciplina
-                ");
-                $stmt->bindParam(':disciplina', $dados['disciplina']);
-                $stmt->execute();
+                $disciplinaNome = trim($dados['disciplina']);
+                $stmt = $this->conn->prepare("SELECT id FROM disciplinas WHERE nome = :disciplina");
+                $stmt->execute([':disciplina' => $disciplinaNome]);
                 $disciplina_id = $stmt->fetchColumn();
             }
 
-            // Insere os agendamentos
-            $stmt = $this->conn->prepare("
-                INSERT INTO agendamentos 
-                (aluno_id, disciplina_id, data_aula, horario) 
-                VALUES (:aluno_id, :disciplina_id, :data_aula, :horario)
-            ");
+            // Insere os agendamentos (aulas) se existirem
+            if (isset($dados['aulas']) && is_array($dados['aulas'])) {
+                $stmtAula = $this->conn->prepare("INSERT INTO agendamentos (aluno_id, disciplina_id, data_aula, horario) VALUES (:aluno_id, :disciplina_id, :data_aula, :horario)");
+                foreach ($dados['aulas'] as $aula) {
+                    $data = trim($aula['data'] ?? '');
+                    $horario = trim($aula['horario'] ?? '');
 
-            foreach ($dados['aulas'] as $aula) {
-                $stmt->bindParam(':aluno_id', $aluno_id);
-                $stmt->bindParam(':disciplina_id', $disciplina_id);
-                $stmt->bindParam(':data_aula', $aula['data']);
-                $stmt->bindParam(':horario', $aula['horario']);
-                $stmt->execute();
+                    // Valida o formato da data (esperado: YYYY-MM-DD)
+                    $d = DateTime::createFromFormat('Y-m-d', $data);
+                    if (!$d || $d->format('Y-m-d') !== $data) {
+                        throw new Exception("Data inválida: $data");
+                    }
+
+                    // Valida o formato do horário (esperado: HH:MM)
+                    if (!preg_match('/^\d{2}:\d{2}$/', $horario)) {
+                        throw new Exception("Horário inválido: $horario");
+                    }
+
+                    $stmtAula->execute([
+                        ':aluno_id' => $aluno_id,
+                        ':disciplina_id' => $disciplina_id,
+                        ':data_aula' => $data,
+                        ':horario' => $horario
+                    ]);
+                }
             }
 
             $this->conn->commit();
             return ['success' => true, 'message' => 'Aulas cadastradas com sucesso'];
-
         } catch (Exception $e) {
             $this->conn->rollBack();
             return ['success' => false, 'message' => 'Erro ao cadastrar: ' . $e->getMessage()];

@@ -7,43 +7,72 @@ header('Access-Control-Allow-Headers: Content-Type');
 require_once '../database/Database.php';
 
 try {
-    // Recebe os dados do POST
-    $dados = json_decode(file_get_contents('php://input'), true);
-    
-    if (!$dados) {
+    // Recebe e decodifica os dados do POST
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!$input) {
         throw new Exception('Dados inválidos');
     }
 
-    // Valida os campos obrigatórios
-    if (empty($dados['nome']) || empty($dados['email'])) {
+    // Sanitiza e valida os campos obrigatórios
+    $nome = trim($input['nome'] ?? '');
+    $email = trim($input['email'] ?? '');
+    if (empty($nome) || empty($email)) {
         throw new Exception('Nome e email são obrigatórios');
     }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+         throw new Exception('Email inválido');
+    }
+
+    // Opcional: disciplina
+    $disciplinaNome = !empty($input['disciplina']) ? trim($input['disciplina']) : null;
 
     $database = new Database();
     $conn = $database->getConnection();
     $conn->beginTransaction();
 
-    // Insere o aluno
-    $stmt = $conn->prepare('INSERT INTO alunos (nome, email) VALUES (?, ?)');
-    $stmt->execute([$dados['nome'], $dados['email']]);
+    // Insere o aluno utilizando parâmetros nomeados para maior clareza
+    $stmt = $conn->prepare('INSERT INTO alunos (nome, email) VALUES (:nome, :email)');
+    $stmt->execute([
+        ':nome'  => $nome,
+        ':email' => $email
+    ]);
     $alunoId = $conn->lastInsertId();
 
-    // Se tiver disciplina, busca o ID dela
+    // Se a disciplina for informada, busca seu ID
     $disciplinaId = null;
-    if (!empty($dados['disciplina'])) {
-        $stmt = $conn->prepare('SELECT id FROM disciplinas WHERE nome = ?');
-        $stmt->execute([$dados['disciplina']]);
+    if (!is_null($disciplinaNome)) {
+        $stmt = $conn->prepare('SELECT id FROM disciplinas WHERE nome = :nome');
+        $stmt->execute([':nome' => $disciplinaNome]);
         $disciplina = $stmt->fetch();
         if ($disciplina) {
             $disciplinaId = $disciplina['id'];
         }
     }
 
-    // Insere os agendamentos se houver
-    if (!empty($dados['aulas'])) {
-        $stmt = $conn->prepare('INSERT INTO agendamentos (aluno_id, disciplina_id, data_aula, horario, status) VALUES (?, ?, ?, ?, "agendado")');
-        foreach ($dados['aulas'] as $aula) {
-            $stmt->execute([$alunoId, $disciplinaId, $aula['data'], $aula['horario']]);
+    // Insere os agendamentos (aulas) se existirem
+    if (!empty($input['aulas']) && is_array($input['aulas'])) {
+        $stmtAula = $conn->prepare('INSERT INTO agendamentos (aluno_id, disciplina_id, data_aula, horario, status) VALUES (:aluno_id, :disciplina_id, :data_aula, :horario, "agendado")');
+        foreach ($input['aulas'] as $aula) {
+            $data = trim($aula['data'] ?? '');
+            $horario = trim($aula['horario'] ?? '');
+            
+            // Valida o formato da data (esperado: YYYY-MM-DD)
+            $d = DateTime::createFromFormat('Y-m-d', $data);
+            if (!$d || $d->format('Y-m-d') !== $data) {
+                throw new Exception("Data inválida: $data");
+            }
+            
+            // Valida o formato do horário (esperado: HH:MM)
+            if (!preg_match('/^\d{2}:\d{2}$/', $horario)) {
+                throw new Exception("Horário inválido: $horario");
+            }
+            
+            $stmtAula->execute([
+                ':aluno_id'    => $alunoId,
+                ':disciplina_id' => $disciplinaId,
+                ':data_aula'   => $data,
+                ':horario'     => $horario
+            ]);
         }
     }
 
@@ -59,7 +88,6 @@ try {
     if (isset($conn)) {
         $conn->rollBack();
     }
-    
     http_response_code(400);
     echo json_encode([
         'success' => false,
