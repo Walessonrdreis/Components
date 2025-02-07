@@ -1,0 +1,219 @@
+.modal-editar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+}
+
+.modal-editar.show {
+    display: flex !important;
+}
+
+.modal-editar .modal-content {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    margin: 20px auto;
+    opacity: 1;
+}
+
+.modal-editar .modal-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--light-bg);
+    border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.modal-editar .modal-header h2 {
+    margin: 0;
+    font-size: 1.5em;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-editar .modal-header h2 i {
+    color: var(--primary-color);
+}
+
+.modal-editar .close-modal {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.modal-editar .close-modal:hover {
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--danger-color);
+    transform: rotate(90deg);
+}
+
+.modal-editar .modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-editar .modal-footer {
+    padding: 20px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    background: var(--light-bg);
+    border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.modal-editar .calendar-edit-container {
+    background: var(--light-bg);
+    padding: 20px;
+    border-radius: var(--radius);
+    margin-top: 20px;
+}
+
+.modal-editar .selected-dates-list {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 10px;
+    background: white;
+    border-radius: var(--radius);
+    margin-top: 15px;
+}
+
+.modal-editar .selected-date-item {
+    background: white;
+    padding: 12px;
+    border-radius: var(--radius);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.modal-editar .btn-salvar {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 500;
+    margin-top: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modal-editar .btn-salvar:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.modal-editar .default-time-control {
+    background: var(--light-bg);
+    padding: 15px;
+    border-radius: var(--radius);
+    margin: 15px 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.modal-editar .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.modal-editar .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.modal-editar .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--border-color);
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.modal-editar .toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+.modal-editar input:checked+.toggle-slider {
+    background-color: var(--primary-color);
+}
+
+.modal-editar input:checked+.toggle-slider:before {
+    transform: translateX(26px);
+}
+
+@media (max-width: 768px) {
+    .modal-editar .modal-content {
+        width: 95%;
+        margin: 10px;
+        max-height: 95vh;
+    }
+
+    .modal-editar .modal-header,
+    .modal-editar .modal-body,
+    .modal-editar .modal-footer {
+        padding: 15px;
+    }
+
+    .modal-editar .modal-footer {
+        flex-direction: column;
+    }
+
+    .modal-editar .modal-footer button {
+        width: 100%;
+    }
+
+    .modal-editar .default-time-control {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

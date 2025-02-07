@@ -3,12 +3,15 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calendário com Múltipla Seleção</title>
 
     <!-- CSS -->
     <link rel="stylesheet" href="components/Calendar/Calendar.css">
     <link rel="stylesheet" href="components/AlunosList/AlunosList.css">
+    <link rel="stylesheet" href="components/AlunoCard/AlunoCard.css">
+    <link rel="stylesheet" href="components/ModalEditarAluno/ModalEditarAluno.css">
+    <link rel="stylesheet" href="components/AlunosListHeader/AlunosListHeader.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <link rel="stylesheet" href="components/PdfViewer/PdfViewer.css">
@@ -28,14 +31,23 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
+    <!-- Componentes -->
     <script src="components/FormContainer/FormContainer.js"></script>
     <script src="components/DisciplinaManager/DisciplinaManager.js"></script>
     <script src="components/Calendar/SelectedDates.js"></script>
+    <script src="components/Calendar/Calendar.js"></script>
+    <script src="components/AlunosListHeader/AlunosListHeader.js"></script>
+    <script src="components/AlunosList/AlunosList.js"></script>
+    <script src="components/AlunoCard/AlunoCard.js"></script>
+    <script src="components/ModalEditarAluno/ModalEditarAluno.js"></script>
+
+    <!-- Scripts da aplicação -->
+    <script src="scripts.js"></script>
 </head>
 
 <body>
     <div class="main-container">
-        <!-- Novo componente de formulário -->
+        <!-- Formulário de cadastro -->
         <div id="form-container" class="form-container">
             <h2 class="section-title">Cadastrar Novo Aluno</h2>
             <div class="form-group">
@@ -52,137 +64,78 @@
                     <option value="">Selecione uma disciplina (opcional)</option>
                 </select>
             </div>
-            <button type="button" id="toggle-disciplina-manager">
+            <button type="button" id="toggle-disciplina-manager" class="btn-gerenciar-disciplinas">
                 <i class="fas fa-cogs"></i> Gerenciar Disciplinas
             </button>
             <div id="disciplina-manager" class="disciplina-manager">
-                <input type="text" id="nova-disciplina" placeholder="Nova Disciplina">
-                <button type="button" class="btn-adicionar-disciplina">
-                    <i class="fas fa-plus"></i> Adicionar Disciplina
-                </button>
-                <div class="disciplinas-list"></div>
+                <div class="disciplina-form">
+                    <input type="text" id="nova-disciplina" placeholder="Nova Disciplina">
+                    <button type="button" class="btn-adicionar-disciplina">
+                        <i class="fas fa-plus"></i> Adicionar
+                    </button>
+                </div>
+                <div class="disciplinas-list">
+                    <!-- Lista de disciplinas será carregada aqui -->
+                </div>
             </div>
+
+            <!-- Container do Calendário -->
+            <div class="calendar-container">
+                <div id="meu-calendario" class="calendar"></div>
+
+                <!-- Container das Datas Selecionadas -->
+                <div id="datas-selecionadas" class="selected-dates-container">
+                    <div class="info-aluno-container">
+                        <div class="info-aluno">
+                            <div class="info-aluno-detalhes">
+                                <h4><i class="fas fa-user-circle"></i> Informações do Aluno</h4>
+                                <p><i class="fas fa-user"></i> <strong>Nome:</strong> <span class="nome-aluno"></span>
+                                </p>
+                                <p><i class="fas fa-envelope"></i> <strong>Email:</strong> <span
+                                        class="email-aluno"></span></p>
+                                <p><i class="fas fa-book"></i> <strong>Disciplina:</strong> <span
+                                        class="disciplina-aluno"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="time-control-container">
+                        <div class="default-time-control">
+                            <label for="defaultTime">
+                                <i class="fas fa-clock"></i> Horário padrão:
+                                <input type="time" class="default-time-input" id="defaultTime" value="09:00">
+                            </label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="useDefaultTime">
+                                <span class="toggle-slider"></span>
+                                <span class="sr-only">Usar horário padrão</span>
+                            </label>
+                            <span><i class="fas fa-sync-alt"></i> Usar horário padrão</span>
+                        </div>
+                    </div>
+                    <h3><i class="fas fa-calendar-check"></i> Datas Selecionadas</h3>
+                    <div class="selected-dates-list"></div>
+                </div>
+            </div>
+
             <button type="button" class="btn-cadastrar" id="btn-cadastrar">
                 <i class="fas fa-user-plus"></i> Cadastrar Aluno
             </button>
         </div>
 
-        <!-- Inicializa os componentes FormContainer e DisciplinaManager -->
-        <script>
-            $(document).ready(function () {
-                $('#form-container').formContainer();
-                $('#disciplina-manager').disciplinaManager();
-                $('#datas-selecionadas').selectedDates();
-            });
-        </script>
-
-        <!-- Container do Calendário -->
-        <div class="calendar-container">
-            <div id="meu-calendario" class="calendar"></div>
-
-            <!-- Container das Datas Selecionadas -->
-            <div id="datas-selecionadas" class="selected-dates-container">
-                <div class="info-aluno-container">
-                    <div class="info-aluno">
-                        <div class="info-aluno-detalhes">
-                            <h4><i class="fas fa-user-circle"></i> Informações do Aluno</h4>
-                            <p><i class="fas fa-user"></i> <strong>Nome:</strong> <span class="nome-aluno"></span></p>
-                            <p><i class="fas fa-envelope"></i> <strong>Email:</strong> <span class="email-aluno"></span>
-                            </p>
-                            <p><i class="fas fa-book"></i> <strong>Disciplina:</strong> <span
-                                    class="disciplina-aluno"></span></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="time-control-container">
-                    <div class="default-time-control">
-                        <label for="defaultTime">
-                            <i class="fas fa-clock"></i> Horário padrão:
-                            <input type="time" class="default-time-input" id="defaultTime" value="09:00">
-                        </label>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="useDefaultTime">
-                            <span class="toggle-slider"></span>
-                            <span class="sr-only">Usar horário padrão</span>
-                        </label>
-                        <span><i class="fas fa-sync-alt"></i> Usar horário padrão</span>
-                    </div>
-                </div>
-                <h3><i class="fas fa-calendar-check"></i> Datas Selecionadas</h3>
-                <div class="selected-dates-list"></div>
-            </div>
-        </div>
-
-        <!-- Novo componente de lista de alunos -->
+        <!-- Lista de alunos -->
         <div id="lista-alunos" class="alunos-list-container">
-            <div class="alunos-list-header">
-                <h3><i class="fas fa-users"></i> Alunos Cadastrados</h3>
-                <div class="alunos-search">
-                    <i class="fas fa-search search-icon"></i>
-                </div>
-            </div>
+            <div id="alunos-header"></div>
             <div class="alunos-list-content">
                 <!-- Conteúdo da lista de alunos -->
             </div>
         </div>
     </div>
 
-    <!-- Scripts da aplicação -->
-    <script src="components/Calendar/Calendar.js"></script>
-    <script src="components/AlunosList/AlunosList.js"></script>
-    <script src="scripts.js"></script>
-
     <!-- Sistema de notificações -->
     <div id="notifications-container" class="notifications-container"></div>
 
     <!-- Modal de Edição de Aluno -->
-    <div id="modal-editar" class="modal modal-editar">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2><i class="fas fa-user-edit"></i> Editar Aluno</h2>
-                <button class="close-modal" title="Fechar modal"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <form id="form-editar-aluno" class="modal-form">
-                    <input type="hidden" name="aluno_id">
-                    <div class="form-group">
-                        <label for="edit-nome"><i class="fas fa-user"></i> Nome do Aluno</label>
-                        <input type="text" id="edit-nome" name="nome" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-email"><i class="fas fa-envelope"></i> Email</label>
-                        <input type="email" id="edit-email" name="email" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-disciplina"><i class="fas fa-book"></i> Disciplina</label>
-                        <select id="edit-disciplina" name="disciplina" class="form-control select-disciplina">
-                            <option value="">Selecione uma disciplina</option>
-                        </select>
-                    </div>
-                    <div class="calendar-edit-container">
-                        <h3><i class="fas fa-calendar-alt"></i> Datas das Aulas</h3>
-                        <div class="default-time-control">
-                            <label for="defaultTimeEdit">
-                                <i class="fas fa-clock"></i> Horário padrão:
-                                <input type="time" id="defaultTimeEdit" value="09:00"
-                                    title="Selecione o horário padrão">
-                            </label>
-                            <label class="toggle-switch" for="useDefaultTimeEdit">
-                                <input type="checkbox" id="useDefaultTimeEdit" title="Usar horário padrão">
-                                <span class="toggle-slider"></span>
-                            </label>
-                            <span>Usar horário padrão</span>
-                        </div>
-                        <div id="calendario-edicao"></div>
-                        <div class="selected-dates-list"></div>
-                    </div>
-                    <button type="submit" class="btn-salvar">
-                        <i class="fas fa-save"></i> Salvar Alterações
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
+    <div id="modal-editar" class="modal-editar"></div>
 </body>
 
 </html>

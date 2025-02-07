@@ -13,80 +13,6 @@
             this.setupStructure();
             this.loadAlunos();
             this.setupEventListeners();
-
-            // Adiciona evento para o botão cadastrar
-            const $btnCadastrar = $('.btn-cadastrar');
-            if ($btnCadastrar.length) {
-                $btnCadastrar.on('click', () => {
-                    const nome = $('#nome').val();
-                    const email = $('#email').val();
-                    const disciplina = $('#disciplina').val();
-                    const calendar = $('#meu-calendario').data('calendar');
-
-                    if (!nome) {
-                        alert('Por favor, preencha o nome do aluno.');
-                        return;
-                    }
-
-                    if (!email) {
-                        alert('Por favor, preencha o email do aluno.');
-                        return;
-                    }
-
-                    // Coleta as datas e horários selecionados
-                    const aulas = [];
-                    if (calendar && calendar.selectedDates) {
-                        calendar.selectedDates.forEach(dateStr => {
-                            aulas.push({
-                                data: dateStr,
-                                horario: calendar.selectedDateTimes.get(dateStr) || calendar.defaultTime
-                            });
-                        });
-                    }
-
-                    // Envia os dados para a API
-                    fetch('api/cadastrar-aluno.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            nome,
-                            email,
-                            disciplina,
-                            aulas
-                        })
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                // Limpa os campos
-                                $('#nome').val('');
-                                $('#email').val('');
-                                $('#disciplina').val('');
-
-                                // Limpa o calendário
-                                if (calendar) {
-                                    calendar.selectedDates.clear();
-                                    calendar.selectedDateTimes.clear();
-                                    calendar.updateCalendar();
-                                    calendar.updateSelectedDatesList();
-                                }
-
-                                // Atualiza a lista de alunos
-                                this.loadAlunos();
-
-                                alert('Aluno cadastrado com sucesso!');
-                            } else {
-                                throw new Error(data.message);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Erro ao cadastrar aluno:', error);
-                            alert('Erro ao cadastrar aluno. Tente novamente.');
-                        });
-                });
-            }
         }
 
         setupStructure() {
@@ -335,19 +261,14 @@
         }
 
         editarAluno(alunoId) {
-            fetch(`api/buscar-aluno.php?aluno_id=${alunoId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        this.mostrarModalEditar(data.aluno);
-                    } else {
-                        throw new Error(data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao buscar aluno:', error);
-                    alert('Erro ao carregar dados do aluno. Tente novamente.');
-                });
+            const modalEditarAluno = $('#modal-editar').data('modalEditarAluno');
+            if (!modalEditarAluno) {
+                console.error('ModalEditarAluno não está inicializado');
+                return;
+            }
+
+            $('#modal-editar').addClass('show');
+            modalEditarAluno.carregarDadosAluno(alunoId);
         }
 
         mostrarModalEditar(aluno) {
@@ -409,13 +330,13 @@
 
             // Adiciona evento para fechar
             modal.querySelector('.close-modal').addEventListener('click', () => {
-                modal.style.display = 'none';
+                modal.classList.remove('show');
             });
 
             // Adiciona evento para fechar ao clicar fora
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
-                    modal.style.display = 'none';
+                    modal.classList.remove('show');
                 }
             });
 
@@ -449,7 +370,7 @@
                     this.salvarEdicaoAluno(e.target, calendarEdit);
                 });
 
-                modal.style.display = 'block';
+                modal.classList.add('show');
             });
         }
 
@@ -488,7 +409,7 @@
 
                         // Fecha o modal
                         const modal = document.getElementById('modal-editar');
-                        modal.style.display = 'none';
+                        modal.classList.remove('show');
 
                         alert('Aluno atualizado com sucesso!');
                     } else {

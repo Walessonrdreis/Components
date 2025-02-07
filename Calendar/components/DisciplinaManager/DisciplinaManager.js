@@ -1,24 +1,39 @@
 class DisciplinaManager {
     constructor(containerId) {
         this.$container = $(`#${containerId}`);
+        this.isOpen = false;
         this.init();
     }
 
     init() {
         this.setupEventListeners();
         this.loadDisciplinas();
-        this.$container.hide(); // Inicialmente oculto
+        this.$container.hide();
     }
 
     setupEventListeners() {
-        this.$container.on('click', '.btn-adicionar-disciplina', this.handleAdicionarDisciplina.bind(this));
-        this.$container.on('click', '.btn-editar-disciplina', this.handleEditarDisciplina.bind(this));
-        this.$container.on('click', '.btn-excluir-disciplina', this.handleExcluirDisciplina.bind(this));
-        $('#toggle-disciplina-manager').on('click', this.toggleDisciplinaManager.bind(this));
+        this.$container.on('click', '.btn-adicionar-disciplina', () => {
+            this.handleAdicionarDisciplina();
+        });
+
+        this.$container.on('click', '.btn-editar-disciplina', (e) => {
+            this.handleEditarDisciplina(e);
+        });
+
+        this.$container.on('click', '.btn-excluir-disciplina', (e) => {
+            this.handleExcluirDisciplina(e);
+        });
     }
 
     toggleDisciplinaManager() {
-        this.$container.slideToggle();
+        if (this.isOpen) {
+            this.$container.slideUp(200);
+            this.isOpen = false;
+        } else {
+            this.$container.slideDown(200);
+            this.isOpen = true;
+            this.loadDisciplinas();
+        }
     }
 
     loadDisciplinas() {
