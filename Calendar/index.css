@@ -1,55 +1,219 @@
-     :root {
-            --primary-color: #0066cc;
-            --primary-hover: #0052a3;
-            --secondary-color: #6c757d;
-            --success-color: #28a745;
-            --danger-color: #dc3545;
-            --light-bg: #f8f9fa;
-            --border-color: #dee2e6;
-            --text-color: #333;
-            --text-muted: #6c757d;
-            --shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-            --radius: 8px;
-            --font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        }
+:root {
+    /* Cores principais */
+    --primary-color: #4361ee;
+    --primary-hover: #3046c0;
+    --secondary-color: #6c757d;
+    --success-color: #2ecc71;
+    --success-hover: #27ae60;
+    --danger-color: #e74c3c;
+    --danger-hover: #c0392b;
+    --warning-color: #f39c12;
+    --info-color: #3498db;
 
-        body {
-            font-family: var(--font-family);
-            background: #f0f2f5;
-            color: var(--text-color);
-            line-height: 1.5;
-        }
+    /* Cores de fundo */
+    --light-bg: #f8f9fa;
+    --lighter-bg: #ffffff;
+    --dark-bg: #343a40;
 
-        .main-container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 0 20px;
-        }
+    /* Cores de texto */
+    --text-color: #2d3436;
+    --text-muted: #636e72;
+    --text-light: #b2bec3;
+
+    /* Cores de borda */
+    --border-color: #dfe6e9;
+    --border-hover: #b2bec3;
+
+    /* Sombras */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.15);
+
+    /* Bordas arredondadas */
+    --radius-sm: 4px;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-full: 9999px;
+
+    /* Tipografia */
+    --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+
+    /* Espaçamento */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-base: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+
+    /* Transições */
+    --transition-fast: 150ms ease;
+    --transition-base: 300ms ease;
+    --transition-slow: 500ms ease;
+}
+
+body {
+    font-family: var(--font-family);
+    background: #f0f2f5;
+    color: var(--text-color);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.main-container {
+    max-width: 1200px;
+    margin: var(--spacing-xl) auto;
+    padding: 0 var(--spacing-lg);
+}
 
 /* Utilitários */
-                .sr-only {
-                    position: absolute;
-                    width: 1px;
-                    height: 1px;
-                    padding: 0;
-                    margin: -1px;
-                    overflow: hidden;
-                    clip: rect(0, 0, 0, 0);
-                    white-space: nowrap;
-                    border: 0;
-                }
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
 
-/* Notificações */
-                .notifications-container {
-                    position: fixed;
-    top: 20px;
-                    right: 20px;
-                    z-index: 9999;
-                }
+/* Classes de botões globais */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-radius: var(--radius);
+    font-weight: 500;
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+    cursor: pointer;
+    border: none;
+    outline: none;
+}
 
-                @media (max-width: 768px) {
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.btn-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-success:hover {
+    background: var(--success-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.btn-danger {
+    background: var(--danger-color);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: var(--danger-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+/* Classes de formulário globais */
+.form-control {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-base);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+    background: var(--lighter-bg);
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+    outline: none;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+/* Cards e containers */
+.card {
+    background: var(--lighter-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    transition: all var(--transition-base);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
     .main-container {
-        padding: 0 10px;
-        margin: 10px auto;
+        padding: 0 var(--spacing-base);
+        margin: var(--spacing-lg) auto;
     }
+
+    .btn {
+        width: 100%;
+    }
+}
+
+/* Animações globais */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn var(--transition-base);
+}
+
+.slide-in {
+    animation: slideIn var(--transition-base);
 }

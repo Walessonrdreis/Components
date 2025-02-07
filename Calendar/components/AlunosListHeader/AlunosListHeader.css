@@ -2,56 +2,80 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid var(--border-color);
+    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-lg);
+    background: var(--lighter-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
 }
 
 .section-title {
     color: var(--text-color);
-    margin: 0 0 20px 0;
-    font-size: 1.5em;
+    margin: 0;
+    font-size: var(--font-size-xl);
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--spacing-sm);
+}
+
+.section-title i {
+    color: var(--primary-color);
 }
 
 .alunos-search {
     position: relative;
-    width: 300px;
+    width: 350px;
+    transition: all var(--transition-base);
 }
 
 .search-icon {
     position: absolute;
-    left: 12px;
+    left: var(--spacing-base);
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-muted);
+    transition: color var(--transition-base);
 }
 
 .search-input {
     width: 100%;
-    padding: 10px 10px 10px 35px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    font-size: 0.95em;
-    transition: all 0.2s;
+    padding: var(--spacing-base) var(--spacing-base) var(--spacing-base) calc(var(--spacing-base) * 3);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-base);
+    color: var(--text-color);
+    background: var(--lighter-bg);
+    transition: all var(--transition-base);
 }
 
 .search-input:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+    box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.15);
+}
+
+.search-input:focus+.search-icon {
+    color: var(--primary-color);
+}
+
+.search-input::placeholder {
+    color: var(--text-muted);
 }
 
 @media (max-width: 768px) {
     .alunos-list-header {
         flex-direction: column;
-        gap: 15px;
+        gap: var(--spacing-base);
+        padding: var(--spacing-base);
     }
 
     .alunos-search {
         width: 100%;
+    }
+
+    .search-input {
+        font-size: var(--font-size-sm);
     }
 }
