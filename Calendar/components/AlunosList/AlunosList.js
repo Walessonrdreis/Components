@@ -126,6 +126,7 @@
         mostrarModalAulas(aulas, aluno) {
             const modal = $('<div>', {
                 class: 'modal-aulas',
+                'data-aluno-id': aluno.id,
                 html: `
                     <div class="modal-content">
                         <div class="modal-header">
@@ -257,7 +258,18 @@
                 .then(data => {
                     if (data.success) {
                         alert('Aula excluída com sucesso!');
-                        this.loadAlunos(); // Recarrega a lista de alunos
+                        // Busca as aulas atualizadas do aluno
+                        const alunoId = $('.modal-aulas').data('aluno-id');
+                        fetch(`api/buscar-aulas-aluno.php?aluno_id=${alunoId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Atualiza a tabela de aulas no modal
+                                    this.atualizarTabelaAulas(data.aulas, $('.modal-aulas'));
+                                    // Atualiza a lista de alunos em segundo plano
+                                    this.loadAlunos();
+                                }
+                            });
                     } else {
                         throw new Error(data.message);
                     }
