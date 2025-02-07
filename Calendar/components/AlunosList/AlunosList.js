@@ -269,7 +269,7 @@
         }
 
         visualizarPDF(alunoId) {
-            window.open(`api/gerar-pdf.php?aluno_id=${alunoId}`, '_blank');
+            window.open(`api/gerar-pdf-aluno.php?aluno_id=${alunoId}`, '_blank');
         }
 
         carregarDisciplinas() {
