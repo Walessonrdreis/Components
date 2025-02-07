@@ -3,6 +3,7 @@ $(document).ready(function () {
     const calendar = $('#meu-calendario').calendar().data('calendar');
     const alunosList = $('#lista-alunos').alunosList().data('alunosList');
     const disciplinaManager = $('#disciplina-manager').disciplinaManager().data('disciplinaManager');
+    const formContainer = $('#form-container').formContainer().data('formContainer');
 
     // Disponibiliza o alunosList globalmente para comunicação entre componentes
     window.alunosList = alunosList;
