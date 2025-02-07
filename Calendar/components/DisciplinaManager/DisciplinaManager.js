@@ -37,115 +37,208 @@ class DisciplinaManager {
     }
 
     loadDisciplinas() {
-        fetch('api/listar-disciplinas.php')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const $list = this.$container.find('.disciplinas-list');
-                    $list.empty();
-                    data.disciplinas.forEach(disciplina => {
-                        $list.append(`
-                            <div class="disciplina-item" data-id="${disciplina.id}">
-                                <span class="disciplina-nome">${disciplina.nome}</span>
-                                <button class="btn-editar-disciplina"><i class="fas fa-edit"></i> Editar</button>
-                                <button class="btn-excluir-disciplina"><i class="fas fa-trash-alt"></i> Excluir</button>
-                            </div>
-                        `);
-                    });
-                }
-            })
-            .catch(error => console.error('Erro ao carregar disciplinas:', error));
+        loader.show('Carregando disciplinas...', 500).then(() => {
+            fetch('api/listar-disciplinas.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const $list = this.$container.find('.disciplinas-list');
+                        $list.empty();
+                        data.disciplinas.forEach(disciplina => {
+                            $list.append(`
+                                <div class="disciplina-item" data-id="${disciplina.id}">
+                                    <span class="disciplina-nome">${disciplina.nome}</span>
+                                    <button class="btn-editar-disciplina"><i class="fas fa-edit"></i> Editar</button>
+                                    <button class="btn-excluir-disciplina"><i class="fas fa-trash-alt"></i> Excluir</button>
+                                </div>
+                            `);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar disciplinas:', error);
+                    notifications.error('Erro ao carregar disciplinas. Tente novamente.');
+                });
+        });
     }
 
     handleAdicionarDisciplina() {
         const $button = this.$container.find('.btn-adicionar-disciplina');
         const novaDisciplina = this.$container.find('#nova-disciplina').val().trim();
         if (!novaDisciplina) {
-            alert('Por favor, insira o nome da disciplina.');
+            notifications.warning('Por favor, insira o nome da disciplina.');
             return;
         }
 
-        $button.prop('disabled', true); // Desabilita o botão temporariamente
+        $button.prop('disabled', true);
 
-        fetch('api/adicionar-disciplina.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ nome: novaDisciplina })
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Disciplina adicionada com sucesso!');
-                    this.$container.find('#nova-disciplina').val('');
-                    this.loadDisciplinas();
-                } else {
-                    throw new Error(data.message);
-                }
+        loader.show('Adicionando disciplina...', 500).then(() => {
+            fetch('api/adicionar-disciplina.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nome: novaDisciplina })
             })
-            .catch(error => {
-                console.error('Erro ao adicionar disciplina:', error);
-                alert('Erro ao adicionar disciplina. Tente novamente.');
-            })
-            .finally(() => {
-                $button.prop('disabled', false); // Reabilita o botão
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        notifications.success('Disciplina adicionada com sucesso!');
+                        this.$container.find('#nova-disciplina').val('');
+                        this.loadDisciplinas();
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao adicionar disciplina:', error);
+                    notifications.error('Erro ao adicionar disciplina. Tente novamente.');
+                })
+                .finally(() => {
+                    $button.prop('disabled', false);
+                });
+        });
     }
 
-    handleEditarDisciplina(event) {
+    async handleEditarDisciplina(event) {
         const $item = $(event.currentTarget).closest('.disciplina-item');
         const disciplinaId = $item.data('id');
-        const novoNome = prompt('Editar nome da disciplina:', $item.find('.disciplina-nome').text());
-        if (!novoNome) return;
+        const nomeAtual = $item.find('.disciplina-nome').text();
 
-        fetch('api/editar-disciplina.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ id: disciplinaId, nome: novoNome })
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Disciplina editada com sucesso!');
-                    this.loadDisciplinas();
-                } else {
-                    throw new Error(data.message);
+        // Criar o modal
+        const modal = document.createElement('div');
+        modal.className = 'modal-editar-disciplina';
+        modal.style.display = 'flex';
+
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-edit"></i> Editar Disciplina</h2>
+                    <button class="close-modal"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="nome-disciplina">Nome da Disciplina</label>
+                        <input type="text" id="nome-disciplina" class="form-control" value="${nomeAtual}" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-cancelar"><i class="fas fa-times"></i> Cancelar</button>
+                    <button class="btn-salvar"><i class="fas fa-check"></i> Salvar</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Focar no input
+        const input = modal.querySelector('#nome-disciplina');
+        input.focus();
+        input.select();
+
+        // Função para fechar o modal
+        const fecharModal = () => {
+            modal.remove();
+        };
+
+        // Eventos dos botões
+        modal.querySelector('.close-modal').addEventListener('click', fecharModal);
+        modal.querySelector('.btn-cancelar').addEventListener('click', fecharModal);
+
+        // Retornar uma Promise que será resolvida quando o usuário confirmar ou cancelar
+        return new Promise((resolve, reject) => {
+            modal.querySelector('.btn-salvar').addEventListener('click', async () => {
+                const novoNome = input.value.trim();
+
+                if (!novoNome) {
+                    notifications.error('O nome da disciplina não pode estar vazio.');
+                    return;
                 }
-            })
-            .catch(error => {
-                console.error('Erro ao editar disciplina:', error);
-                alert('Erro ao editar disciplina. Tente novamente.');
+
+                if (novoNome === nomeAtual) {
+                    fecharModal();
+                    resolve(null);
+                    return;
+                }
+
+                loader.show('Atualizando disciplina...');
+
+                try {
+                    const response = await fetch('api/editar-disciplina.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            id: disciplinaId,
+                            nome: novoNome
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.status === 'success') {
+                        notifications.success('Disciplina atualizada com sucesso!');
+                        fecharModal();
+                        resolve(novoNome);
+                    } else {
+                        notifications.error(data.message || 'Erro ao atualizar disciplina.');
+                    }
+                } catch (error) {
+                    console.error('Erro ao atualizar disciplina:', error);
+                    notifications.error('Erro ao atualizar disciplina. Por favor, tente novamente.');
+                } finally {
+                    loader.hide();
+                }
             });
+
+            // Fechar modal ao pressionar ESC
+            modal.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    fecharModal();
+                    resolve(null);
+                }
+            });
+
+            // Submeter formulário ao pressionar Enter
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    modal.querySelector('.btn-salvar').click();
+                }
+            });
+        });
     }
 
-    handleExcluirDisciplina(event) {
+    async handleExcluirDisciplina(event) {
         const $item = $(event.currentTarget).closest('.disciplina-item');
         const disciplinaId = $item.data('id');
-        if (!confirm('Tem certeza que deseja excluir esta disciplina?')) return;
+        const nomeDisciplina = $item.find('.disciplina-nome').text();
 
-        fetch('api/remover-disciplina.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ id: disciplinaId })
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Disciplina excluída com sucesso!');
-                    this.loadDisciplinas();
-                } else {
-                    throw new Error(data.message);
-                }
+        const confirmou = await notifications.confirm(`Tem certeza que deseja excluir a disciplina "${nomeDisciplina}"?`);
+        if (!confirmou) return;
+
+        loader.show('Excluindo disciplina...', 500).then(() => {
+            fetch('api/remover-disciplina.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id: disciplinaId })
             })
-            .catch(error => {
-                console.error('Erro ao excluir disciplina:', error);
-                alert('Erro ao excluir disciplina. Tente novamente.');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        notifications.success('Disciplina excluída com sucesso!');
+                        this.loadDisciplinas();
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao excluir disciplina:', error);
+                    notifications.error('Erro ao excluir disciplina. Tente novamente.');
+                });
+        });
     }
 }
 

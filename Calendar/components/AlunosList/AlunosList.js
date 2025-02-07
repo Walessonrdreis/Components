@@ -27,25 +27,52 @@
             `);
         }
 
-        loadAlunos() {
-            fetch('api/listar-alunos.php')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        this.renderAlunos(data.alunos);
-                    } else {
-                        throw new Error(data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao carregar alunos:', error);
-                    this.$container.find('.alunos-grid').html(`
-                        <div class="error-message">
-                            <i class="fas fa-exclamation-circle"></i>
-                            Erro ao carregar alunos. Tente novamente.
-                        </div>
-                    `);
-                });
+        loadAlunos(showNotifications = true) {
+            const loadData = () => {
+                if (showNotifications) {
+                    loader.show('Carregando alunos...', 800).then(() => {
+                        fetch('api/listar-alunos.php')
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    this.renderAlunos(data.alunos);
+                                    if (showNotifications) {
+                                        notifications.success('Alunos carregados com sucesso!');
+                                    }
+                                } else {
+                                    throw new Error(data.message);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Erro ao carregar alunos:', error);
+                                if (showNotifications) {
+                                    notifications.error('Erro ao carregar alunos. Tente novamente.');
+                                }
+                            });
+                    });
+                } else {
+                    fetch('api/listar-alunos.php')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                this.renderAlunos(data.alunos);
+                            } else {
+                                throw new Error(data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erro ao carregar alunos:', error);
+                        });
+                }
+            };
+
+            // Verifica se o loader está disponível
+            if (window.loader) {
+                loadData();
+            } else {
+                // Se o loader não estiver disponível, tenta novamente em 100ms
+                setTimeout(loadData, 100);
+            }
         }
 
         renderAlunos(alunos) {
@@ -213,71 +240,64 @@
 
             $grid.on('click', '.btn-excluir', (e) => {
                 const aulaId = $(e.target).closest('.btn-excluir').data('aula-id');
-                if (confirm('Tem certeza que deseja excluir esta aula?')) {
-                    this.excluirAula(aulaId);
-                }
+                this.excluirAula(aulaId);
             });
         }
 
         atualizarStatusAula(aulaId, novoStatus) {
-            fetch('api/atualizar-status-aula.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    aula_id: aulaId,
-                    status: novoStatus
+            loader.show('Atualizando status...', 500).then(() => {
+                fetch('api/atualizar-status-aula.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        aula_id: aulaId,
+                        status: novoStatus
+                    })
                 })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Status atualizado com sucesso!');
-                    } else {
-                        throw new Error(data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao atualizar status:', error);
-                    alert('Erro ao atualizar status. Tente novamente.');
-                });
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            notifications.success('Status atualizado com sucesso!');
+                            this.loadAlunos();
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao atualizar status:', error);
+                        notifications.error('Erro ao atualizar status. Tente novamente.');
+                    });
+            });
         }
 
-        excluirAula(aulaId) {
-            fetch('api/excluir-aula.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    aula_id: aulaId
+        async excluirAula(aulaId) {
+            const confirmou = await notifications.confirm('Tem certeza que deseja excluir esta aula?');
+            if (!confirmou) return;
+
+            loader.show('Excluindo aula...', 500).then(() => {
+                fetch('api/excluir-aula.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ aula_id: aulaId })
                 })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Aula excluída com sucesso!');
-                        // Busca as aulas atualizadas do aluno
-                        const alunoId = $('.modal-aulas').data('aluno-id');
-                        fetch(`api/buscar-aulas-aluno.php?aluno_id=${alunoId}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    // Atualiza a tabela de aulas no modal
-                                    this.atualizarTabelaAulas(data.aulas, $('.modal-aulas'));
-                                    // Atualiza a lista de alunos em segundo plano
-                                    this.loadAlunos();
-                                }
-                            });
-                    } else {
-                        throw new Error(data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao excluir aula:', error);
-                    alert('Erro ao excluir aula. Tente novamente.');
-                });
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            notifications.success('Aula excluída com sucesso!');
+                            this.loadAlunos();
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao excluir aula:', error);
+                        notifications.error('Erro ao excluir aula. Tente novamente.');
+                    });
+            });
         }
 
         visualizarPDF(alunoId) {
@@ -404,27 +424,30 @@
                 });
         }
 
-        removerDisciplina(id) {
-            if (confirm('Tem certeza que deseja remover esta disciplina?')) {
-                fetch('api/remover-disciplina.php', {
+        async removerDisciplina(id) {
+            const confirmou = await notifications.confirm('Tem certeza que deseja remover esta disciplina?');
+            if (!confirmou) return;
+
+            try {
+                const response = await fetch('api/remover-disciplina.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ id })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            this.atualizarListaDisciplinas();
-                            this.carregarDisciplinas();
-                        } else {
-                            throw new Error(data.message);
-                        }
-                    })
-                    .catch(error => {
-                        alert('Erro ao remover disciplina: ' + error.message);
-                    });
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    notifications.success('Disciplina removida com sucesso!');
+                    this.atualizarListaDisciplinas();
+                    this.carregarDisciplinas();
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                notifications.error('Erro ao remover disciplina: ' + error.message);
             }
         }
 
@@ -540,47 +563,52 @@
                 });
             }
 
-            fetch(`api/editar-aluno.php?aluno_id=${alunoId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nome, email, disciplina, aulas })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Aluno atualizado com sucesso!');
-                        this.cancelarEdicao();
-                        this.loadAlunos();
-                    } else {
-                        throw new Error(data.message);
-                    }
+            loader.show('Atualizando aluno...', 800).then(() => {
+                fetch(`api/editar-aluno.php?aluno_id=${alunoId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome, email, disciplina, aulas })
                 })
-                .catch(error => {
-                    console.error('Erro ao atualizar aluno:', error);
-                    alert('Erro ao atualizar aluno. Tente novamente.');
-                });
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            notifications.success('Aluno atualizado com sucesso!');
+                            this.cancelarEdicao();
+                            this.loadAlunos(false);
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao atualizar aluno:', error);
+                        notifications.error('Erro ao atualizar aluno. Tente novamente.');
+                    });
+            });
         }
 
-        deletarAluno(alunoId) {
-            if (confirm('Tem certeza que deseja excluir este aluno?')) {
+        async deletarAluno(alunoId) {
+            const confirmou = await notifications.confirm('Tem certeza que deseja excluir este aluno e todas as suas aulas?');
+            if (!confirmou) return;
+
+            loader.show('Excluindo aluno...', 800).then(() => {
                 fetch(`api/excluir-aluno.php?aluno_id=${alunoId}`, {
                     method: 'POST'
                 })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            alert('Aluno excluído com sucesso!');
+                            notifications.success('Aluno excluído com sucesso!');
                             this.cancelarEdicao();
-                            this.loadAlunos();
+                            this.loadAlunos(false);
                         } else {
                             throw new Error(data.message);
                         }
                     })
                     .catch(error => {
                         console.error('Erro ao excluir aluno:', error);
-                        alert('Erro ao excluir aluno. Tente novamente.');
+                        notifications.error('Erro ao excluir aluno. Tente novamente.');
                     });
-            }
+            });
         }
 
         cancelarEdicao() {

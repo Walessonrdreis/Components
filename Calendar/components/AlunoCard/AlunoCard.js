@@ -53,33 +53,108 @@ class AlunoCard {
         });
     }
 
+    async deletarAluno(alunoId) {
+        const confirmou = await notifications.confirm('Tem certeza que deseja excluir este aluno?');
+        if (!confirmou) return;
+
+        loader.show('Excluindo aluno...', 800).then(() => {
+            fetch(`api/excluir-aluno.php?aluno_id=${alunoId}`, {
+                method: 'POST'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        notifications.success('Aluno excluído com sucesso!');
+                        this.limparFormulario();
+                        if (window.alunosList) {
+                            window.alunosList.loadAlunos();
+                        }
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao excluir aluno:', error);
+                    notifications.error('Erro ao excluir aluno. Tente novamente.');
+                });
+        });
+    }
+
+    confirmarEdicao(alunoId) {
+        const nome = $('#nome').val();
+        const email = $('#email').val();
+        const disciplina = $('#disciplina').val();
+        const calendar = $('#meu-calendario').data('calendar');
+
+        if (!nome || !email) {
+            notifications.warning('Por favor, preencha todos os campos obrigatórios.');
+            return;
+        }
+
+        const aulas = [];
+        if (calendar) {
+            calendar.selectedDates.forEach(dateStr => {
+                aulas.push({
+                    data: dateStr,
+                    horario: calendar.selectedDateTimes.get(dateStr) || calendar.defaultTime
+                });
+            });
+        }
+
+        loader.show('Atualizando aluno...', 800).then(() => {
+            fetch(`api/editar-aluno.php?aluno_id=${alunoId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome, email, disciplina, aulas })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        notifications.success('Aluno atualizado com sucesso!');
+                        this.limparFormulario();
+                        if (window.alunosList) {
+                            window.alunosList.loadAlunos();
+                        }
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao atualizar aluno:', error);
+                    notifications.error('Erro ao atualizar aluno. Tente novamente.');
+                });
+        });
+    }
+
     carregarDadosParaEdicao(alunoId) {
         // Primeiro, desabilita o botão de cadastro
         const $btnCadastrar = $('.btn-cadastrar');
         $btnCadastrar.prop('disabled', true).css('opacity', '0.5');
 
         // Carrega os dados do aluno
-        fetch(`api/buscar-aluno.php?aluno_id=${alunoId}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Busca as aulas do aluno
-                    return fetch(`api/buscar-aulas-aluno.php?aluno_id=${alunoId}`)
-                        .then(response => response.json())
-                        .then(aulasData => {
-                            if (aulasData.success) {
-                                this.preencherFormulario(data.aluno, aulasData.aulas, alunoId);
-                            }
-                            return aulasData;
-                        });
-                }
-                throw new Error(data.message);
-            })
-            .catch(error => {
-                console.error('Erro ao carregar dados do aluno:', error);
-                alert('Erro ao carregar dados do aluno. Tente novamente.');
-                $btnCadastrar.prop('disabled', false).css('opacity', '1');
-            });
+        loader.show('Carregando dados do aluno...', 800).then(() => {
+            fetch(`api/buscar-aluno.php?aluno_id=${alunoId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Busca as aulas do aluno
+                        return fetch(`api/buscar-aulas-aluno.php?aluno_id=${alunoId}`)
+                            .then(response => response.json())
+                            .then(aulasData => {
+                                if (aulasData.success) {
+                                    this.preencherFormulario(data.aluno, aulasData.aulas, alunoId);
+                                }
+                                return aulasData;
+                            });
+                    }
+                    throw new Error(data.message);
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar dados do aluno:', error);
+                    notifications.error('Erro ao carregar dados do aluno. Tente novamente.');
+                    $btnCadastrar.prop('disabled', false).css('opacity', '1');
+                });
+        });
     }
 
     preencherFormulario(aluno, aulas, alunoId) {
@@ -137,69 +212,6 @@ class AlunoCard {
         $('html, body').animate({
             scrollTop: $formContainer.offset().top - 20
         }, 500);
-    }
-
-    confirmarEdicao(alunoId) {
-        const nome = $('#nome').val();
-        const email = $('#email').val();
-        const disciplina = $('#disciplina').val();
-        const calendar = $('#meu-calendario').data('calendar');
-
-        const aulas = [];
-        if (calendar) {
-            calendar.selectedDates.forEach(dateStr => {
-                aulas.push({
-                    data: dateStr,
-                    horario: calendar.selectedDateTimes.get(dateStr) || calendar.defaultTime
-                });
-            });
-        }
-
-        fetch(`api/editar-aluno.php?aluno_id=${alunoId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nome, email, disciplina, aulas })
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Aluno atualizado com sucesso!');
-                    this.limparFormulario();
-                    if (window.alunosList) {
-                        window.alunosList.loadAlunos();
-                    }
-                } else {
-                    throw new Error(data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Erro ao atualizar aluno:', error);
-                alert('Erro ao atualizar aluno. Tente novamente.');
-            });
-    }
-
-    deletarAluno(alunoId) {
-        if (confirm('Tem certeza que deseja excluir este aluno?')) {
-            fetch(`api/excluir-aluno.php?aluno_id=${alunoId}`, {
-                method: 'POST'
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Aluno excluído com sucesso!');
-                        this.limparFormulario();
-                        if (window.alunosList) {
-                            window.alunosList.loadAlunos();
-                        }
-                    } else {
-                        throw new Error(data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao excluir aluno:', error);
-                    alert('Erro ao excluir aluno. Tente novamente.');
-                });
-        }
     }
 
     limparFormulario() {
