@@ -1,3 +1,8 @@
+import { MESSAGES, TITLES } from './constants/messages.js';
+import { formatDate } from './utils/formatters.js';
+import { API } from './utils/api.js';
+import { generateCardHTML } from './templates/card.js';
+
 class AlunoCard {
     constructor(element, options = {}) {
         this.$container = $(element);
@@ -13,73 +18,54 @@ class AlunoCard {
     render() {
         const { aluno } = this.options;
         if (!aluno) return;
-
-        this.$container.html(`
-            <div class="aluno-card" data-aluno-id="${aluno.id}">
-                <div class="aluno-info">
-                    <h4>${aluno.nome}</h4>
-                    <p class="disciplina">${aluno.disciplina || 'Sem disciplina'}</p>
-                    <p class="proxima-aula">Próxima aula: ${this.formatarData(aluno.proxima_aula)}</p>
-                </div>
-                <div class="aluno-actions">
-                    <button class="btn-pdf" data-tooltip="Visualizar PDF">
-                        <i class="fas fa-file-pdf"></i>
-                    </button>
-                    <button class="btn-ver-aulas" data-tooltip="Ver aulas">
-                        <i class="fas fa-calendar-alt"></i>
-                    </button>
-                    <button class="btn-editar" data-tooltip="Editar aluno">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                </div>
-            </div>
-        `);
+        
+        this.$container.html(generateCardHTML(aluno, formatDate));
     }
 
     setupEventListeners() {
-        this.$container.on('click', '.btn-ver-aulas', () => {
-            const alunoId = this.$container.find('.aluno-card').data('aluno-id');
-            this.options.onVerAulas && this.options.onVerAulas(alunoId);
-        });
-
-        this.$container.on('click', '.btn-editar', () => {
-            const alunoId = this.$container.find('.aluno-card').data('aluno-id');
-            this.options.onEditar && this.options.onEditar(alunoId);
-        });
-
-        this.$container.on('click', '.btn-pdf', () => {
-            const alunoId = this.$container.find('.aluno-card').data('aluno-id');
-            this.options.onVisualizarPDF && this.options.onVisualizarPDF(alunoId);
-        });
+        this.$container
+            .on('click', '.btn-ver-aulas', () => this.handleVerAulas())
+            .on('click', '.btn-editar', () => this.handleEditar())
+            .on('click', '.btn-pdf', () => this.handleVisualizarPDF());
     }
 
-    carregarDadosParaEdicao(alunoId) {
-        // Primeiro, desabilita o botão de cadastro
+    handleVerAulas() {
+        const alunoId = this.getAlunoId();
+        this.options.onVerAulas?.(alunoId);
+    }
+
+    handleEditar() {
+        const alunoId = this.getAlunoId();
+        this.options.onEditar?.(alunoId);
+    }
+
+    handleVisualizarPDF() {
+        const alunoId = this.getAlunoId();
+        this.options.onVisualizarPDF?.(alunoId);
+    }
+
+    getAlunoId() {
+        return this.$container.find('.aluno-card').data('aluno-id');
+    }
+
+    async carregarDadosParaEdicao(alunoId) {
         const $btnCadastrar = $('.btn-cadastrar');
         $btnCadastrar.prop('disabled', true).css('opacity', '0.5');
 
-        // Carrega os dados do aluno
-        fetch(`api/buscar-aluno.php?aluno_id=${alunoId}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Busca as aulas do aluno
-                    return fetch(`api/buscar-aulas-aluno.php?aluno_id=${alunoId}`)
-                        .then(response => response.json())
-                        .then(aulasData => {
-                            if (aulasData.success) {
-                                this.preencherFormulario(data.aluno, aulasData.aulas, alunoId);
-                            }
-                            return aulasData;
-                        });
-                }
-                throw new Error(data.message);
-            })
-            .catch(error => {
-                console.error('Erro ao carregar dados do aluno:', error);
-                alert('Erro ao carregar dados do aluno. Tente novamente.');
-                $btnCadastrar.prop('disabled', false).css('opacity', '1');
-            });
+        try {
+            const [alunoData, aulasData] = await Promise.all([
+                API.loadAlunoData(alunoId),
+                API.loadAlunoAulas(alunoId)
+            ]);
+
+            if (alunoData.success && aulasData.success) {
+                this.preencherFormulario(alunoData.aluno, aulasData.aulas, alunoId);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar dados do aluno:', error);
+            alert(MESSAGES.ERROR_LOAD);
+            $btnCadastrar.prop('disabled', false).css('opacity', '1');
+        }
     }
 
     preencherFormulario(aluno, aulas, alunoId) {
@@ -253,4 +239,6 @@ $.fn.alunoCard = function (options) {
             $.data(this, 'alunoCard').atualizarDados(options.aluno);
         }
     });
-}; 
+};
+
+export default AlunoCard; 

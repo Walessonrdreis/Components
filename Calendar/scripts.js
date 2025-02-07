@@ -1,3 +1,13 @@
+// Importação dos componentes
+import AlunoCard from './components/AlunoCard/AlunoCard.js';
+import AlunosList from './components/AlunosList/AlunosList.js';
+import DisciplinaManager from './components/DisciplinaManager/DisciplinaManager.js';
+import FormContainer from './components/FormContainer/FormContainer.js';
+import ModalAulas from './components/ModalAulas/ModalAulas.js';
+import ModalEditarAluno from './components/ModalEditarAluno/ModalEditarAluno.js';
+import PdfViewer from './components/PdfViewer/PdfViewer.js';
+
+// Mantém o código existente e adiciona as novas inicializações
 $(document).ready(function () {
     // Inicializa os componentes principais
     const calendar = $('#meu-calendario').calendar().data('calendar');
@@ -61,4 +71,47 @@ $(document).ready(function () {
     $('#disciplina-manager').on('click', function (e) {
         e.stopPropagation();
     });
+
+    // Inicializa os componentes reestruturados
+    initializeComponents();
+    
+    // Verifica se está tudo funcionando
+    verifyComponents();
 });
+
+function initializeComponents() {
+    try {
+        // Inicializa cada componente
+        $('#alunos-list').alunosList();
+        $('#form-container').formContainer();
+        $('#disciplina-manager').disciplinaManager();
+        $('#modal-aulas').modalAulas();
+        $('#modal-editar').modalEditarAluno();
+        
+        // Inicializa PDF Viewer
+        window.pdfViewer = new PdfViewer();
+        
+        console.log('✅ Componentes inicializados com sucesso');
+    } catch (error) {
+        console.error('❌ Erro ao inicializar componentes:', error);
+    }
+}
+
+function verifyComponents() {
+    const components = {
+        'AlunosList': '#alunos-list',
+        'FormContainer': '#form-container',
+        'DisciplinaManager': '#disciplina-manager',
+        'ModalAulas': '#modal-aulas',
+        'ModalEditarAluno': '#modal-editar'
+    };
+
+    Object.entries(components).forEach(([name, selector]) => {
+        const component = $(selector).data(name.toLowerCase());
+        if (component) {
+            console.log(`✅ ${name} inicializado com sucesso`);
+        } else {
+            console.error(`❌ Erro ao inicializar ${name}`);
+        }
+    });
+}
