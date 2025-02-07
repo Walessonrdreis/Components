@@ -20,21 +20,14 @@
                 <div class="alunos-list-header">
                     <h3>Alunos Cadastrados</h3>
                     <div class="alunos-search">
-                        <input type="text" placeholder="Buscar aluno..." class="search-input">
+                        <input type="text" class="search-input" placeholder="Buscar aluno...">
                     </div>
                 </div>
-                <div class="alunos-list-content">
-                    <div class="alunos-grid">
-                        <!-- Alunos serão inseridos aqui -->
-                    </div>
-                    <div class="loading-spinner">Carregando...</div>
-                </div>
+                <div class="alunos-grid"></div>
             `);
         }
 
         loadAlunos() {
-            this.$container.find('.loading-spinner').show();
-
             fetch('api/listar-alunos.php')
                 .then(response => response.json())
                 .then(data => {
@@ -46,12 +39,12 @@
                 })
                 .catch(error => {
                     console.error('Erro ao carregar alunos:', error);
-                    this.$container.find('.alunos-grid').html(
-                        '<div class="error-message">Erro ao carregar alunos. Tente novamente.</div>'
-                    );
-                })
-                .finally(() => {
-                    this.$container.find('.loading-spinner').hide();
+                    this.$container.find('.alunos-grid').html(`
+                        <div class="error-message">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Erro ao carregar alunos. Tente novamente.
+                        </div>
+                    `);
                 });
         }
 
@@ -59,62 +52,48 @@
             const $grid = this.$container.find('.alunos-grid');
             $grid.empty();
 
-            alunos.forEach(aluno => {
-                const $alunoCard = $(`
-                    <div class="aluno-card" data-aluno-id="${aluno.id}">
-                        <div class="aluno-info">
-                            <h4>${aluno.nome}</h4>
-                            <p class="disciplina">${aluno.disciplina || 'Sem disciplina'}</p>
-                            <p class="proxima-aula">Próxima aula: ${this.formatarData(aluno.proxima_aula)}</p>
-                        </div>
-                        <div class="aluno-actions">
-                            <button class="btn-pdf" data-tooltip="Visualizar PDF">
-                                <i class="fas fa-file-pdf"></i>
-                            </button>
-                            <button class="btn-ver-aulas" data-tooltip="Ver aulas">
-                                <i class="fas fa-calendar-alt"></i>
-                            </button>
-                            <button class="btn-editar" data-tooltip="Editar aluno">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                        </div>
+            if (alunos.length === 0) {
+                $grid.html(`
+                    <div class="no-alunos">
+                        <i class="fas fa-users"></i>
+                        <p>Nenhum aluno cadastrado</p>
                     </div>
                 `);
+                return;
+            }
 
-                $grid.append($alunoCard);
+            alunos.forEach(aluno => {
+                const $card = $('<div>', {
+                    class: 'aluno-card-container',
+                    id: `aluno-card-${aluno.id}`
+                });
+                $card.alunoCard({
+                    aluno: aluno,
+                    onVerAulas: (alunoId) => this.verAulas(alunoId),
+                    onVisualizarPDF: (alunoId) => this.visualizarPDF(alunoId),
+                    onEditar: (alunoId) => this.editarAluno(alunoId)
+                });
+                $grid.append($card);
             });
         }
 
         setupEventListeners() {
             // Busca de alunos
             this.$container.find('.search-input').on('input', $.debounce(300, (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                this.filterAlunos(searchTerm);
+                this.filterAlunos(e.target.value);
             }));
-
-            // Ações dos botões
-            this.$container.on('click', '.btn-ver-aulas', (e) => {
-                const alunoId = $(e.target).closest('.aluno-card').data('aluno-id');
-                this.verAulas(alunoId);
-            });
-
-            this.$container.on('click', '.btn-editar', (e) => {
-                const alunoId = $(e.target).closest('.aluno-card').data('aluno-id');
-                this.editarAluno(alunoId);
-            });
-
-            this.$container.on('click', '.btn-pdf', (e) => {
-                const alunoId = $(e.target).closest('.aluno-card').data('aluno-id');
-                window.open(`api/gerar-pdf-aluno.php?aluno_id=${alunoId}`, '_blank');
-            });
         }
 
         filterAlunos(searchTerm) {
             const $cards = this.$container.find('.aluno-card');
+            searchTerm = searchTerm.toLowerCase();
+
             $cards.each(function () {
                 const $card = $(this);
                 const nome = $card.find('h4').text().toLowerCase();
-                if (nome.includes(searchTerm)) {
+                const disciplina = $card.find('.disciplina').text().toLowerCase();
+
+                if (nome.includes(searchTerm) || disciplina.includes(searchTerm)) {
                     $card.show();
                 } else {
                     $card.hide();
@@ -124,13 +103,11 @@
 
         formatarData(data) {
             if (!data) return 'Não agendada';
-            // Ajusta a data para meio-dia UTC para evitar problemas com fuso horário
-            const date = new Date(data + 'T12:00:00Z');
+            const date = new Date(data);
             return date.toLocaleDateString('pt-BR');
         }
 
         verAulas(alunoId) {
-            // Busca as aulas do aluno
             fetch(`api/buscar-aulas-aluno.php?aluno_id=${alunoId}`)
                 .then(response => response.json())
                 .then(data => {
@@ -147,64 +124,49 @@
         }
 
         mostrarModalAulas(aulas, aluno) {
-            this.currentAlunoId = aluno.id;
-
-            // Remove modal existente se houver
-            const modalExistente = document.getElementById('modal-aulas');
-            if (modalExistente) {
-                modalExistente.remove();
-            }
-
-            const modalHtml = `
-                <div id="modal-aulas" class="modal modal-aulas">
+            const modal = $('<div>', {
+                class: 'modal-aulas',
+                html: `
                     <div class="modal-content">
                         <div class="modal-header">
                             <h2><i class="fas fa-calendar-alt"></i> Aulas do Aluno</h2>
-                            <button class="close-modal" title="Fechar"><i class="fas fa-times"></i></button>
+                            <button class="close-modal"><i class="fas fa-times"></i></button>
                         </div>
                         <div class="modal-body">
-                            <div class="aluno-info"></div>
+                            <div class="info-aluno-container">
+                                <div class="info-aluno-detalhes">
+                                    <h3><i class="fas fa-user-circle"></i> ${aluno.nome}</h3>
+                                    <p><i class="fas fa-book"></i> Disciplina: ${aluno.disciplina || 'Sem disciplina'}</p>
+                                </div>
+                            </div>
                             <div class="aulas-grid"></div>
                         </div>
                     </div>
-                </div>
-            `;
-            document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-            const modal = document.getElementById('modal-aulas');
-
-            // Adiciona evento para fechar
-            modal.querySelector('.close-modal').addEventListener('click', () => {
-                modal.style.display = 'none';
-                this.currentAlunoId = null;
+                `
             });
 
-            // Adiciona evento para fechar ao clicar fora
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.style.display = 'none';
-                    this.currentAlunoId = null;
+            // Adiciona o modal ao body
+            $('body').append(modal);
+            modal.fadeIn(200);
+
+            // Atualiza a tabela de aulas
+            this.atualizarTabelaAulas(aulas, modal);
+
+            // Eventos do modal
+            modal.on('click', '.close-modal', () => {
+                modal.fadeOut(200, () => modal.remove());
+            });
+
+            modal.on('click', (e) => {
+                if ($(e.target).is(modal)) {
+                    modal.fadeOut(200, () => modal.remove());
                 }
             });
-
-            // Preenche o modal com os dados
-            const alunoInfo = modal.querySelector('.aluno-info');
-            alunoInfo.innerHTML = `
-                <div class="info-aluno-container">
-                    <div class="info-aluno-detalhes">
-                        <h3><i class="fas fa-user-circle"></i> ${aluno.nome}</h3>
-                        <p><i class="fas fa-book"></i> Disciplina: ${aluno.disciplina || 'Sem disciplina'}</p>
-                    </div>
-                </div>
-            `;
-
-            this.atualizarTabelaAulas(aulas, modal);
-            modal.style.display = 'block';
         }
 
         atualizarTabelaAulas(aulas, modal) {
-            const aulasGrid = modal.querySelector('.aulas-grid');
-            aulasGrid.innerHTML = `
+            const $grid = modal.find('.aulas-grid');
+            $grid.html(`
                 <table>
                     <thead>
                         <tr>
@@ -216,7 +178,7 @@
                     </thead>
                     <tbody>
                         ${aulas.map(aula => {
-                const date = new Date(aula.data_aula + 'T12:00:00Z');
+                const date = new Date(aula.data_aula);
                 const formattedDate = date.toLocaleDateString('pt-BR');
                 return `
                                 <tr>
@@ -239,187 +201,21 @@
             }).join('')}
                     </tbody>
                 </table>
-            `;
+            `);
 
-            // Reaplica os eventos aos novos elementos
-            aulasGrid.querySelectorAll('.status-select').forEach(select => {
-                select.addEventListener('change', (e) => {
-                    const aulaId = e.target.dataset.aulaId;
-                    const novoStatus = e.target.value;
-                    this.atualizarStatusAula(aulaId, novoStatus);
-                });
+            // Eventos da tabela
+            $grid.on('change', '.status-select', (e) => {
+                const aulaId = $(e.target).data('aula-id');
+                const novoStatus = e.target.value;
+                this.atualizarStatusAula(aulaId, novoStatus);
             });
 
-            aulasGrid.querySelectorAll('.btn-excluir').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const aulaId = e.target.closest('.btn-excluir').dataset.aulaId;
-                    if (confirm('Tem certeza que deseja excluir esta aula?')) {
-                        this.excluirAula(aulaId);
-                    }
-                });
-            });
-        }
-
-        editarAluno(alunoId) {
-            const modalEditarAluno = $('#modal-editar').data('modalEditarAluno');
-            if (!modalEditarAluno) {
-                console.error('ModalEditarAluno não está inicializado');
-                return;
-            }
-
-            $('#modal-editar').addClass('show');
-            modalEditarAluno.carregarDadosAluno(alunoId);
-        }
-
-        mostrarModalEditar(aluno) {
-            // Remove modal existente se houver
-            const modalExistente = document.getElementById('modal-editar');
-            if (modalExistente) {
-                modalExistente.remove();
-            }
-
-            const modalHtml = `
-                <div id="modal-editar" class="modal-editar">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h2>Editar Aluno</h2>
-                            <button class="close-modal" title="Fechar"><i class="fas fa-times"></i></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="form-editar-aluno">
-                                <input type="hidden" name="aluno_id">
-                                <div class="form-group">
-                                    <label for="edit-nome">Nome:</label>
-                                    <input type="text" id="edit-nome" name="nome" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="edit-email">Email:</label>
-                                    <input type="email" id="edit-email" name="email" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="edit-disciplina">Disciplina:</label>
-                                    <select id="edit-disciplina" name="disciplina" class="select-disciplina">
-                                        <option value="">Selecione uma disciplina</option>
-                                    </select>
-                                </div>
-                                <div class="calendar-edit-container">
-                                    <h3>Datas das Aulas</h3>
-                                    <div id="calendario-edicao"></div>
-                                    <div class="time-control-container">
-                                        <div class="default-time-control">
-                                            <label for="defaultTimeEdit">Horário padrão:
-                                                <input type="time" class="default-time-input" id="defaultTimeEdit" value="09:00">
-                                            </label>
-                                            <label class="toggle-switch">
-                                                <input type="checkbox" id="useDefaultTimeEdit">
-                                                <span class="toggle-slider"></span>
-                                            </label>
-                                            <span>Usar horário padrão</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn-salvar">Salvar</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-            const modal = document.getElementById('modal-editar');
-
-            // Adiciona evento para fechar
-            modal.querySelector('.close-modal').addEventListener('click', () => {
-                modal.classList.remove('show');
-            });
-
-            // Adiciona evento para fechar ao clicar fora
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.remove('show');
+            $grid.on('click', '.btn-excluir', (e) => {
+                const aulaId = $(e.target).closest('.btn-excluir').data('aula-id');
+                if (confirm('Tem certeza que deseja excluir esta aula?')) {
+                    this.excluirAula(aulaId);
                 }
             });
-
-            // Carrega as disciplinas antes de preencher o formulário
-            this.carregarDisciplinasParaEdicao().then(() => {
-                // Preenche o formulário
-                modal.querySelector('[name="aluno_id"]').value = aluno.id;
-                modal.querySelector('[name="nome"]').value = aluno.nome;
-                modal.querySelector('[name="email"]').value = aluno.email || '';
-                modal.querySelector('[name="disciplina"]').value = aluno.disciplina || '';
-
-                // Inicializa o calendário com opção para não mostrar datas selecionadas
-                const calendarEdit = $('#calendario-edicao').calendar({
-                    firstDayOfWeek: 0,
-                    dateFormat: 'dd/mm/yy',
-                    showSelectedDates: false // Adiciona esta opção
-                }).data('calendar');
-
-                // Sobrescreve a função updateSelectedDatesList para não fazer nada
-                calendarEdit.updateSelectedDatesList = function () {
-                    // Não faz nada, evitando que a lista seja atualizada
-                };
-
-                // Carrega as datas existentes
-                this.carregarDatasExistentes(aluno.id, calendarEdit);
-
-                // Configura o evento de submit do formulário
-                const form = modal.querySelector('#form-editar-aluno');
-                form.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    this.salvarEdicaoAluno(e.target, calendarEdit);
-                });
-
-                modal.classList.add('show');
-            });
-        }
-
-        salvarEdicaoAluno(form, calendar) {
-            const alunoId = form.querySelector('[name="aluno_id"]').value;
-            const nome = form.querySelector('[name="nome"]').value;
-            const email = form.querySelector('[name="email"]').value;
-            const disciplina = form.querySelector('[name="disciplina"]').value;
-
-            // Coleta todas as datas e horários selecionados
-            const aulas = [];
-            calendar.selectedDates.forEach(dateStr => {
-                aulas.push({
-                    data: dateStr,
-                    horario: calendar.selectedDateTimes.get(dateStr) || calendar.defaultTime
-                });
-            });
-
-            fetch(`api/editar-aluno.php?aluno_id=${alunoId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    nome,
-                    email,
-                    disciplina: disciplina,
-                    aulas: aulas
-                })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Atualiza a lista de alunos
-                        this.loadAlunos();
-
-                        // Fecha o modal
-                        const modal = document.getElementById('modal-editar');
-                        modal.classList.remove('show');
-
-                        alert('Aluno atualizado com sucesso!');
-                    } else {
-                        throw new Error(data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao atualizar aluno:', error);
-                    alert('Erro ao atualizar aluno. Tente novamente.');
-                });
         }
 
         atualizarStatusAula(aulaId, novoStatus) {
@@ -448,8 +244,6 @@
         }
 
         excluirAula(aulaId) {
-            const modal = document.getElementById('modal-aulas');
-
             fetch('api/excluir-aula.php', {
                 method: 'POST',
                 headers: {
@@ -462,20 +256,8 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Recarrega as aulas do aluno atual
-                        if (this.currentAlunoId) {
-                            fetch(`api/buscar-aulas-aluno.php?aluno_id=${this.currentAlunoId}`)
-                                .then(response => response.json())
-                                .then(data => {
-                                    if (data.success) {
-                                        // Atualiza a tabela de aulas
-                                        this.atualizarTabelaAulas(data.aulas, modal);
-                                        // Atualiza a lista de alunos para refletir as mudanças
-                                        this.loadAlunos();
-                                    }
-                                });
-                        }
                         alert('Aula excluída com sucesso!');
+                        this.loadAlunos(); // Recarrega a lista de alunos
                     } else {
                         throw new Error(data.message);
                     }
@@ -484,6 +266,10 @@
                     console.error('Erro ao excluir aula:', error);
                     alert('Erro ao excluir aula. Tente novamente.');
                 });
+        }
+
+        visualizarPDF(alunoId) {
+            window.open(`api/gerar-pdf.php?aluno_id=${alunoId}`, '_blank');
         }
 
         carregarDisciplinas() {
@@ -630,53 +416,182 @@
             }
         }
 
-        // Novo método para carregar disciplinas de forma assíncrona
-        carregarDisciplinasParaEdicao() {
-            return fetch('api/listar-disciplinas.php')
+        editarAluno(alunoId) {
+            // Primeiro, desabilita o botão de cadastro
+            const $btnCadastrar = $('.btn-cadastrar');
+            $btnCadastrar.prop('disabled', true).css('opacity', '0.5');
+
+            // Carrega os dados do aluno
+            fetch(`api/buscar-aluno.php?aluno_id=${alunoId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        const $select = $('#edit-disciplina');
-                        $select.find('option:not(:first)').remove();
-
-                        data.disciplinas.forEach(disciplina => {
-                            $select.append(`<option value="${disciplina.nome}">${disciplina.nome}</option>`);
-                        });
+                        // Busca as aulas do aluno
+                        return fetch(`api/buscar-aulas-aluno.php?aluno_id=${alunoId}`)
+                            .then(response => response.json())
+                            .then(aulasData => {
+                                if (aulasData.success) {
+                                    this.preencherFormularioEdicao(data.aluno, aulasData.aulas, alunoId);
+                                }
+                                return aulasData;
+                            });
                     }
+                    throw new Error(data.message);
                 })
-                .catch(error => console.error('Erro ao carregar disciplinas:', error));
+                .catch(error => {
+                    console.error('Erro ao carregar dados do aluno:', error);
+                    alert('Erro ao carregar dados do aluno. Tente novamente.');
+                    $btnCadastrar.prop('disabled', false).css('opacity', '1');
+                });
         }
 
-        carregarDatasExistentes(alunoId, calendar) {
-            if (!calendar) {
-                console.error('Calendário não inicializado');
-                return;
+        preencherFormularioEdicao(aluno, aulas, alunoId) {
+            // Atualiza o título do formulário
+            $('#form-container .section-title').html('<i class="fas fa-user-edit"></i> Editar Aluno');
+
+            // Preenche os campos do formulário
+            $('#nome').val(aluno.nome);
+            $('#email').val(aluno.email);
+            $('#disciplina').val(aluno.disciplina);
+
+            // Atualiza o calendário com as aulas existentes
+            const calendar = $('#meu-calendario').data('calendar');
+            if (calendar) {
+                calendar.selectedDates.clear();
+                calendar.selectedDateTimes.clear();
+
+                aulas.forEach(aula => {
+                    calendar.selectedDates.add(aula.data_aula);
+                    calendar.selectedDateTimes.set(aula.data_aula, aula.horario);
+                });
+
+                calendar.updateCalendar();
+                calendar.updateSelectedDatesList();
             }
 
-            fetch(`api/buscar-aulas-aluno.php?aluno_id=${alunoId}`)
+            // Adiciona os botões de edição e exclusão
+            const $formContainer = $('#form-container');
+            const $botoesAntigos = $formContainer.find('.form-buttons, .btn-cadastrar');
+            $botoesAntigos.hide();
+
+            // Cria os novos botões se ainda não existirem
+            if (!$formContainer.find('.botoes-edicao').length) {
+                const $botoesEdicao = $('<div>', {
+                    class: 'botoes-edicao',
+                    style: 'display: flex; gap: 10px; justify-content: center; margin-top: 20px;'
+                }).appendTo($formContainer);
+
+                $('<button>', {
+                    type: 'button',
+                    class: 'btn-editar-confirmar',
+                    html: '<i class="fas fa-save"></i> Confirmar Edição',
+                    click: () => this.confirmarEdicao(alunoId)
+                }).appendTo($botoesEdicao);
+
+                const self = this; // Armazena a referência ao this
+                $('<button>', {
+                    type: 'button',
+                    class: 'btn-deletar',
+                    html: '<i class="fas fa-trash"></i> Deletar Aluno',
+                    click: function () {
+                        self.deletarAluno(alunoId);
+                    }
+                }).appendTo($botoesEdicao);
+
+                $('<button>', {
+                    type: 'button',
+                    class: 'btn-cancelar',
+                    html: '<i class="fas fa-times"></i> Cancelar',
+                    click: () => this.cancelarEdicao()
+                }).appendTo($botoesEdicao);
+            }
+
+            // Rola até o formulário
+            $('html, body').animate({
+                scrollTop: $formContainer.offset().top - 20
+            }, 500);
+        }
+
+        confirmarEdicao(alunoId) {
+            const nome = $('#nome').val();
+            const email = $('#email').val();
+            const disciplina = $('#disciplina').val();
+            const calendar = $('#meu-calendario').data('calendar');
+
+            const aulas = [];
+            if (calendar) {
+                calendar.selectedDates.forEach(dateStr => {
+                    aulas.push({
+                        data: dateStr,
+                        horario: calendar.selectedDateTimes.get(dateStr) || calendar.defaultTime
+                    });
+                });
+            }
+
+            fetch(`api/editar-aluno.php?aluno_id=${alunoId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome, email, disciplina, aulas })
+            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        calendar.selectedDates.clear();
-                        calendar.selectedDateTimes.clear();
-
-                        data.aulas.forEach(aula => {
-                            // Ajusta a data para meio-dia UTC para evitar problemas com fuso horário
-                            const [year, month, day] = aula.data_aula.split('-').map(Number);
-                            const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
-                            const dateStr = date.toISOString().slice(0, 10);
-
-                            calendar.selectedDates.add(dateStr);
-                            calendar.selectedDateTimes.set(dateStr, aula.horario);
-                        });
-
-                        calendar.updateCalendar();
-                        // Não chama updateSelectedDatesList aqui
+                        alert('Aluno atualizado com sucesso!');
+                        this.cancelarEdicao();
+                        this.loadAlunos();
+                    } else {
+                        throw new Error(data.message);
                     }
                 })
                 .catch(error => {
-                    console.error('Erro ao carregar datas:', error);
+                    console.error('Erro ao atualizar aluno:', error);
+                    alert('Erro ao atualizar aluno. Tente novamente.');
                 });
+        }
+
+        deletarAluno(alunoId) {
+            if (confirm('Tem certeza que deseja excluir este aluno?')) {
+                fetch(`api/excluir-aluno.php?aluno_id=${alunoId}`, {
+                    method: 'POST'
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Aluno excluído com sucesso!');
+                            this.cancelarEdicao();
+                            this.loadAlunos();
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao excluir aluno:', error);
+                        alert('Erro ao excluir aluno. Tente novamente.');
+                    });
+            }
+        }
+
+        cancelarEdicao() {
+            // Restaura o título original
+            $('#form-container .section-title').html('<i class="fas fa-user-plus"></i> Cadastrar Novo Aluno');
+
+            // Limpa os campos
+            $('#nome').val('');
+            $('#email').val('');
+            $('#disciplina').val('');
+
+            // Limpa o calendário
+            const calendar = $('#meu-calendario').data('calendar');
+            if (calendar) {
+                calendar.selectedDates.clear();
+                calendar.selectedDateTimes.clear();
+                calendar.updateCalendar();
+                calendar.updateSelectedDatesList();
+            }
+
+            // Remove os botões de edição e mostra o botão de cadastro
+            $('.botoes-edicao').remove();
+            $('.btn-cadastrar').prop('disabled', false).css('opacity', '1').show();
         }
     }
 

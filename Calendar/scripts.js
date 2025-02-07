@@ -2,7 +2,6 @@ $(document).ready(function () {
     // Inicializa os componentes principais
     const calendar = $('#meu-calendario').calendar().data('calendar');
     const alunosList = $('#lista-alunos').alunosList().data('alunosList');
-    const modalEditarAluno = $('#modal-editar').modalEditarAluno().data('modalEditarAluno');
     const disciplinaManager = $('#disciplina-manager').disciplinaManager().data('disciplinaManager');
 
     // Disponibiliza o alunosList globalmente para comunicação entre componentes

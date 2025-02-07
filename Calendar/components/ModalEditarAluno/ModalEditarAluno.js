@@ -17,7 +17,7 @@ class ModalEditarAluno {
             <div class="modal-content">
                 <div class="modal-header">
                     <h2><i class="fas fa-user-edit"></i> Editar Aluno</h2>
-                    <button class="close-modal" title="Fechar modal"><i class="fas fa-times"></i></button>
+                    <button type="button" class="close-modal" title="Fechar modal"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="modal-body">
                     <form id="form-editar-aluno" class="modal-form">
@@ -41,21 +41,27 @@ class ModalEditarAluno {
                             <div class="default-time-control">
                                 <label for="defaultTimeEdit">
                                     <i class="fas fa-clock"></i> Horário padrão:
-                                    <input type="time" id="defaultTimeEdit" value="09:00"
-                                        title="Selecione o horário padrão">
+                                    <input type="time" id="defaultTimeEdit" value="09:00">
                                 </label>
                                 <label class="toggle-switch" for="useDefaultTimeEdit">
-                                    <input type="checkbox" id="useDefaultTimeEdit" title="Usar horário padrão">
+                                    <input type="checkbox" id="useDefaultTimeEdit">
                                     <span class="toggle-slider"></span>
+                                    <span class="toggle-label">Usar horário padrão</span>
                                 </label>
-                                <span>Usar horário padrão</span>
                             </div>
                             <div id="calendario-edicao"></div>
-                            <div class="selected-dates-list"></div>
+                            <div id="datas-selecionadas-edicao" class="selected-dates-container">
+                                <div class="selected-dates-list"></div>
+                            </div>
                         </div>
-                        <button type="submit" class="btn-salvar">
-                            <i class="fas fa-save"></i> Salvar Alterações
-                        </button>
+                        <div class="modal-footer">
+                            <button type="button" class="btn-cancelar">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                            <button type="submit" class="btn-salvar">
+                                <i class="fas fa-save"></i> Salvar Alterações
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -65,18 +71,24 @@ class ModalEditarAluno {
         this.calendar = $('#calendario-edicao').calendar({
             firstDayOfWeek: 0,
             dateFormat: 'dd/mm/yy',
-            showSelectedDates: false
+            showSelectedDates: true,
+            defaultTime: '09:00'
         }).data('calendar');
+
+        // Inicializa o container de datas selecionadas
+        $('#datas-selecionadas-edicao').selectedDates();
     }
 
     setupEventListeners() {
         // Fechar modal
-        this.$container.on('click', '.close-modal', () => this.fecharModal());
-        this.$container.on('click', function (e) {
-            if (e.target === this) {
+        this.$container.on('click', '.close-modal, .btn-cancelar', () => this.fecharModal());
+
+        // Fechar ao clicar fora do modal
+        this.$container.on('click', (e) => {
+            if ($(e.target).is(this.$container)) {
                 this.fecharModal();
             }
-        }.bind(this));
+        });
 
         // Submit do formulário
         this.$container.on('submit', '#form-editar-aluno', (e) => {
@@ -87,25 +99,95 @@ class ModalEditarAluno {
         // Controle de horário padrão
         this.$container.on('change', '#useDefaultTimeEdit', (e) => {
             const useDefault = e.target.checked;
-            if (useDefault && this.calendar) {
+            if (this.calendar) {
+                this.calendar.useDefaultTime = useDefault;
                 const defaultTime = this.$container.find('#defaultTimeEdit').val();
-                this.calendar.defaultTime = defaultTime;
-                this.calendar.useDefaultTime = true;
-                this.calendar.applyDefaultTimeToAll();
-                this.calendar.updateSelectedDatesList();
-            } else if (this.calendar) {
-                this.calendar.useDefaultTime = false;
-                this.calendar.updateSelectedDatesList();
+
+                if (useDefault) {
+                    this.calendar.defaultTime = defaultTime;
+                    this.calendar.applyDefaultTimeToAll();
+                }
+
+                // Atualiza a lista de datas selecionadas
+                this.updateSelectedDatesList();
+
+                // Atualiza estado visual dos inputs de tempo
+                this.$container.find('.time-input').prop('disabled', useDefault);
             }
         });
 
+        // Mudança no horário padrão
         this.$container.on('change', '#defaultTimeEdit', (e) => {
             if (this.calendar && this.$container.find('#useDefaultTimeEdit').is(':checked')) {
                 this.calendar.defaultTime = e.target.value;
                 this.calendar.applyDefaultTimeToAll();
-                this.calendar.updateSelectedDatesList();
+                this.updateSelectedDatesList();
             }
         });
+
+        // Atualização de horários individuais
+        this.$container.on('change', '.time-input', (e) => {
+            if (this.calendar && !this.$container.find('#useDefaultTimeEdit').is(':checked')) {
+                const $dateItem = $(e.target).closest('.selected-date-item');
+                const dateStr = $dateItem.data('date');
+                this.calendar.selectedDateTimes.set(dateStr, e.target.value);
+            }
+        });
+    }
+
+    updateSelectedDatesList() {
+        if (this.calendar) {
+            const selectedDates = Array.from(this.calendar.selectedDates);
+            const selectedDateTimes = this.calendar.selectedDateTimes;
+            const defaultTime = this.calendar.defaultTime;
+            const useDefaultTime = this.calendar.useDefaultTime;
+
+            const $list = this.$container.find('.selected-dates-list');
+            $list.empty();
+
+            if (selectedDates.length === 0) {
+                $list.html('<p>Nenhuma data selecionada</p>');
+                return;
+            }
+
+            selectedDates.sort().forEach(dateStr => {
+                const [year, month, day] = dateStr.split('-');
+                const formattedDate = new Date(year, parseInt(month) - 1, parseInt(day))
+                    .toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    });
+
+                const time = selectedDateTimes.get(dateStr) || defaultTime;
+
+                const $dateItem = $('<div>', {
+                    class: 'selected-date-item',
+                    'data-date': dateStr
+                }).append(
+                    $('<span>', { text: formattedDate }),
+                    $('<input>', {
+                        type: 'time',
+                        value: time,
+                        class: 'time-input',
+                        disabled: useDefaultTime
+                    }),
+                    $('<button>', {
+                        type: 'button',
+                        class: 'remove-date',
+                        html: '<i class="fas fa-times"></i>',
+                        click: () => {
+                            this.calendar.selectedDates.delete(dateStr);
+                            this.calendar.selectedDateTimes.delete(dateStr);
+                            this.calendar.updateCalendar();
+                            this.updateSelectedDatesList();
+                        }
+                    })
+                );
+
+                $list.append($dateItem);
+            });
+        }
     }
 
     loadDisciplinas() {
@@ -219,11 +301,24 @@ class ModalEditarAluno {
     }
 
     abrirModal() {
-        this.$container.show();
+        this.$container.addClass('show');
+        $('body').addClass('modal-open');
     }
 
     fecharModal() {
-        this.$container.hide();
+        this.$container.removeClass('show');
+        $('body').removeClass('modal-open');
+
+        // Limpa o formulário
+        this.$container.find('#form-editar-aluno')[0].reset();
+
+        // Limpa o calendário
+        if (this.calendar) {
+            this.calendar.selectedDates.clear();
+            this.calendar.selectedDateTimes.clear();
+            this.calendar.updateCalendar();
+            this.updateSelectedDatesList();
+        }
     }
 }
 

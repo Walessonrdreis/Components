@@ -1,53 +1,53 @@
-:root {
-    --primary-color: #0066cc;
-    --primary-hover: #0052a3;
-    --secondary-color: #6c757d;
-    --success-color: #28a745;
-    --danger-color: #dc3545;
-    --light-bg: #f8f9fa;
-    --border-color: #dee2e6;
-    --text-color: #333;
-    --text-muted: #6c757d;
-    --shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-    --radius: 8px;
-    --font-family: 'Inter', system-ui, -apple-system, sans-serif;
-}
+     :root {
+            --primary-color: #0066cc;
+            --primary-hover: #0052a3;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --light-bg: #f8f9fa;
+            --border-color: #dee2e6;
+            --text-color: #333;
+            --text-muted: #6c757d;
+            --shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            --radius: 8px;
+            --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
 
-body {
-    font-family: var(--font-family);
-    background: #f0f2f5;
-    color: var(--text-color);
-    line-height: 1.5;
-}
+        body {
+            font-family: var(--font-family);
+            background: #f0f2f5;
+            color: var(--text-color);
+            line-height: 1.5;
+        }
 
-.main-container {
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 0 20px;
-}
+        .main-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
 
 /* Utilitários */
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-}
+                .sr-only {
+                    position: absolute;
+                    width: 1px;
+                    height: 1px;
+                    padding: 0;
+                    margin: -1px;
+                    overflow: hidden;
+                    clip: rect(0, 0, 0, 0);
+                    white-space: nowrap;
+                    border: 0;
+                }
 
 /* Notificações */
-.notifications-container {
-    position: fixed;
+                .notifications-container {
+                    position: fixed;
     top: 20px;
-    right: 20px;
-    z-index: 9999;
-}
+                    right: 20px;
+                    z-index: 9999;
+                }
 
-@media (max-width: 768px) {
+                @media (max-width: 768px) {
     .main-container {
         padding: 0 10px;
         margin: 10px auto;

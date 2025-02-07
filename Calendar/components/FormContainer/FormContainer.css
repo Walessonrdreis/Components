@@ -87,10 +87,133 @@
     flex-shrink: 0;
 }
 
+.form-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: center;
+}
+
+.btn-atualizar,
+.btn-excluir,
+.btn-cancelar {
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 180px;
+}
+
+.btn-atualizar {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+}
+
+.btn-atualizar:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.btn-excluir {
+    background: var(--danger-color);
+    color: white;
+    border: none;
+}
+
+.btn-excluir:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+}
+
+.btn-cancelar {
+    background: white;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.btn-cancelar:hover {
+    background: var(--light-bg);
+    transform: translateY(-1px);
+}
+
+.botoes-edicao {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.btn-editar-confirmar,
+.btn-deletar {
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 180px;
+}
+
+.btn-editar-confirmar {
+    background: var(--success-color);
+    color: white;
+    border: none;
+}
+
+.btn-editar-confirmar:hover {
+    background: #218838;
+    transform: translateY(-1px);
+}
+
+.btn-deletar {
+    background: var(--danger-color);
+    color: white;
+    border: none;
+}
+
+.btn-deletar:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+}
+
 @media (max-width: 768px) {
 
     .form-group input,
     .form-group select {
         width: 100%;
+    }
+
+    .form-buttons {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .btn-atualizar,
+    .btn-excluir,
+    .btn-cancelar {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .botoes-edicao {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-editar-confirmar,
+    .btn-deletar {
+        width: 100%;
+        min-width: auto;
     }
 }
