@@ -1,193 +1,98 @@
 .aluno-card {
-    background: var(--lighter-bg);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
-    margin-bottom: var(--spacing-base);
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: all var(--transition-base);
-    box-shadow: var(--shadow);
-    position: relative;
-    overflow: hidden;
-    border: 1px solid var(--border-color);
-}
-
-.aluno-card::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 4px;
-    background: var(--primary-color);
-    opacity: 0;
-    transition: opacity var(--transition-base);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .aluno-card:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-hover);
-    border-color: var(--border-hover);
-}
-
-.aluno-card:hover::before {
-    opacity: 1;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .aluno-info {
     flex: 1;
-    padding-right: var(--spacing-lg);
 }
 
 .aluno-info h4 {
-    margin: 0 0 var(--spacing-sm);
-    color: var(--text-color);
-    font-size: var(--font-size-lg);
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
+    margin: 0 0 8px 0;
+    color: #333;
+    font-size: 1.1rem;
 }
 
-.aluno-info h4 i {
-    color: var(--primary-color);
-    font-size: var(--font-size-base);
+.aluno-info .disciplina {
+    color: #6c757d;
+    margin: 0 0 5px 0;
+    font-size: 0.9rem;
 }
 
-.aluno-info p {
-    margin: var(--spacing-xs) 0;
-    color: var(--text-muted);
-    font-size: var(--font-size-sm);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-}
-
-.aluno-info p i {
-    color: var(--primary-color);
-    width: 16px;
-    text-align: center;
-}
-
-.aluno-status {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    margin-top: var(--spacing-sm);
-}
-
-.aluno-status .badge {
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: var(--radius-full);
-    font-size: var(--font-size-xs);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.aluno-info .proxima-aula {
+    color: #28a745;
+    margin: 0;
+    font-size: 0.9rem;
 }
 
 .aluno-actions {
     display: flex;
-    gap: var(--spacing-sm);
-    opacity: 0.7;
-    transition: opacity var(--transition-base);
+    gap: 10px;
 }
 
-.aluno-card:hover .aluno-actions {
-    opacity: 1;
-}
-
-.action-button {
+.aluno-actions button {
     background: none;
     border: none;
-    padding: var(--spacing-sm);
-    border-radius: var(--radius);
-    color: var(--text-muted);
+    padding: 8px;
     cursor: pointer;
-    transition: all var(--transition-base);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-}
-
-.action-button i {
-    font-size: var(--font-size-lg);
-}
-
-.action-button:hover {
-    transform: translateY(-2px);
-}
-
-.action-button.edit:hover {
-    color: var(--warning-color);
-    background: rgba(243, 156, 18, 0.1);
-}
-
-.action-button.view:hover {
-    color: var(--info-color);
-    background: rgba(52, 152, 219, 0.1);
-}
-
-.action-button.delete:hover {
-    color: var(--danger-color);
-    background: rgba(231, 76, 60, 0.1);
-}
-
-/* Tooltip */
-[data-tooltip] {
+    border-radius: 4px;
+    transition: all 0.2s ease;
     position: relative;
 }
 
-[data-tooltip]:before {
+.aluno-actions button:hover {
+    background-color: #f8f9fa;
+}
+
+.aluno-actions button[data-tooltip]:hover::after {
     content: attr(data-tooltip);
     position: absolute;
     bottom: 100%;
     left: 50%;
-    transform: translateX(-50%) translateY(-5px);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    background: var(--dark-bg);
+    transform: translateX(-50%);
+    background-color: #333;
     color: white;
-    font-size: var(--font-size-xs);
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
     white-space: nowrap;
-    border-radius: var(--radius-sm);
-    opacity: 0;
-    visibility: hidden;
-    transition: all var(--transition-base);
+    z-index: 1000;
 }
 
-[data-tooltip]:hover:before {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(-10px);
+.btn-pdf i {
+    color: #dc3545;
 }
 
-@media (max-width: 768px) {
+.btn-ver-aulas i {
+    color: #007bff;
+}
+
+.btn-editar i {
+    color: #ffc107;
+}
+
+@media (max-width: 576px) {
     .aluno-card {
         flex-direction: column;
         align-items: flex-start;
-        gap: var(--spacing-base);
-        padding: var(--spacing-base);
-    }
-
-    .aluno-info {
-        padding-right: 0;
-        width: 100%;
+        gap: 15px;
     }
 
     .aluno-actions {
         width: 100%;
         justify-content: flex-end;
-        opacity: 1;
-    }
-
-    .action-button {
-        width: 40px;
-        height: 40px;
-    }
-
-    [data-tooltip]:before {
-        display: none;
     }
 }

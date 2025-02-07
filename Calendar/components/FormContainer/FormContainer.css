@@ -1,245 +1,219 @@
 /* Estilos para o componente FormContainer */
 .form-container {
-    background: var(--lighter-bg);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-xl);
+    background: #fff;
+    padding: 25px;
+    border-radius: var(--radius);
     box-shadow: var(--shadow);
-    max-width: 800px;
-    margin: 0 auto;
-    position: relative;
-    overflow: hidden;
+    margin-bottom: 25px;
 }
 
-.form-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(to right, var(--primary-color), var(--info-color));
-}
-
-.section-title {
-    margin: 0 0 var(--spacing-lg);
-    color: var(--text-color);
-    font-size: var(--font-size-2xl);
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-}
-
-.section-title i {
-    color: var(--primary-color);
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: var(--spacing-lg);
-    margin-bottom: var(--spacing-lg);
+.form-container h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
 }
 
 .form-group {
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: 20px;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: 8px;
     color: var(--text-color);
     font-weight: 500;
-    font-size: var(--font-size-base);
+    font-size: 0.95em;
 }
 
-.form-group label.required::after {
-    content: '*';
-    color: var(--danger-color);
-    margin-left: var(--spacing-xs);
-}
-
-.form-control {
+.form-group input,
+.form-group select {
     width: 100%;
-    padding: var(--spacing-base);
+    padding: 10px;
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
-    font-size: var(--font-size-base);
-    color: var(--text-color);
-    background: var(--lighter-bg);
-    transition: all var(--transition-base);
+    font-size: 1em;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+.form-group input:focus,
+.form-group select:focus {
     outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
 }
 
-.form-control::placeholder {
-    color: var(--text-muted);
+.btn-gerenciar-disciplinas,
+.btn-cadastrar {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    max-width: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 15px auto;
 }
 
-.form-control:disabled {
-    background: var(--light-bg);
-    cursor: not-allowed;
-    opacity: 0.7;
+.btn-gerenciar-disciplinas:hover,
+.btn-cadastrar:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
 }
 
-select.form-control {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236c757d' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right var(--spacing-base) center;
-    padding-right: calc(var(--spacing-base) * 2.5);
+.btn-gerenciar-disciplinas i,
+.btn-cadastrar i {
+    font-size: 1.1em;
+}
+
+.form-container .disciplina-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.form-container .disciplina-container input[type="text"] {
+    flex: 1;
+}
+
+.form-container .disciplina-container button {
+    flex-shrink: 0;
 }
 
 .form-buttons {
     display: flex;
-    justify-content: flex-end;
-    gap: var(--spacing-base);
-    margin-top: var(--spacing-xl);
-    padding-top: var(--spacing-lg);
-    border-top: 1px solid var(--border-color);
-}
-
-.form-buttons button {
-    min-width: 150px;
+    gap: 10px;
+    margin-top: 20px;
     justify-content: center;
 }
 
-.btn {
-    display: inline-flex;
+.btn-atualizar,
+.btn-excluir,
+.btn-cancelar {
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm) var(--spacing-xl);
-    border-radius: var(--radius);
-    font-weight: 500;
-    font-size: var(--font-size-base);
-    transition: all var(--transition-base);
-    cursor: pointer;
-    border: none;
-    outline: none;
+    gap: 8px;
+    min-width: 180px;
 }
 
-.btn-primary {
+.btn-atualizar {
     background: var(--primary-color);
     color: white;
+    border: none;
 }
 
-.btn-primary:hover {
+.btn-atualizar:hover {
     background: var(--primary-hover);
     transform: translateY(-1px);
-    box-shadow: var(--shadow);
 }
 
-.btn-secondary {
-    background: var(--light-bg);
-    color: var(--text-muted);
+.btn-excluir {
+    background: var(--danger-color);
+    color: white;
+    border: none;
 }
 
-.btn-secondary:hover {
-    background: var(--border-color);
+.btn-excluir:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+}
+
+.btn-cancelar {
+    background: white;
     color: var(--text-color);
+    border: 1px solid var(--border-color);
 }
 
-.btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none !important;
-    box-shadow: none !important;
+.btn-cancelar:hover {
+    background: var(--light-bg);
+    transform: translateY(-1px);
 }
 
-.form-help {
-    font-size: var(--font-size-sm);
-    color: var(--text-muted);
-    margin-top: var(--spacing-xs);
+.botoes-edicao {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
 }
 
-.form-error {
-    color: var(--danger-color);
-    font-size: var(--font-size-sm);
-    margin-top: var(--spacing-xs);
+.btn-editar-confirmar,
+.btn-deletar {
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    justify-content: center;
+    gap: 8px;
+    min-width: 180px;
 }
 
-.form-error i {
-    font-size: var(--font-size-base);
-}
-
-.form-success {
-    color: var(--success-color);
-    font-size: var(--font-size-sm);
-    margin-top: var(--spacing-xs);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-}
-
-.form-success i {
-    font-size: var(--font-size-base);
-}
-
-.btn-cadastrar {
+.btn-editar-confirmar {
     background: var(--success-color);
     color: white;
     border: none;
-    padding: var(--spacing-base) var(--spacing-xl);
-    border-radius: var(--radius-full);
-    font-weight: 500;
-    font-size: var(--font-size-base);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    cursor: pointer;
-    transition: all var(--transition-base);
-    box-shadow: var(--shadow);
 }
 
-.btn-cadastrar:hover {
-    background: var(--success-hover);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+.btn-editar-confirmar:hover {
+    background: #218838;
+    transform: translateY(-1px);
 }
 
-.btn-cadastrar i {
-    font-size: var(--font-size-lg);
+.btn-deletar {
+    background: var(--danger-color);
+    color: white;
+    border: none;
 }
 
-.btn-cadastrar:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
+.btn-deletar:hover {
+    background: #c82333;
+    transform: translateY(-1px);
 }
 
 @media (max-width: 768px) {
-    .form-container {
-        padding: var(--spacing-lg);
-        margin: var(--spacing-base);
-        border-radius: var(--radius);
-    }
 
-    .form-row {
-        grid-template-columns: 1fr;
-        gap: var(--spacing-base);
+    .form-group input,
+    .form-group select {
+        width: 100%;
     }
 
     .form-buttons {
         flex-direction: column;
-        gap: var(--spacing-sm);
+        gap: 15px;
     }
 
-    .btn {
+    .btn-atualizar,
+    .btn-excluir,
+    .btn-cancelar {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .botoes-edicao {
+        flex-direction: column;
         width: 100%;
     }
 
-    .btn-cadastrar {
+    .btn-editar-confirmar,
+    .btn-deletar {
         width: 100%;
-        justify-content: center;
-        padding: var(--spacing-base);
+        min-width: auto;
     }
 }
