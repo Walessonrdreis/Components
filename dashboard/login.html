@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Componentes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/css/components/User.css">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-color-dark: #0056b3;
+            --danger-color: #dc3545;
+            --danger-color-dark: #c82333;
+            --success-color: #28a745;
+            --success-color-dark: #218838;
+            --background-color: #f8f9fa;
+            --text-color: #333;
+            --text-color-light: #666;
+            --border-color: #ddd;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="logo">Sistema de Componentes</div>
+    <div id="user-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="./api-usage.js"></script>
+    <script src="./auth.js"></script>
+    <script src="./User.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM carregado, iniciando componente User...');
+            const user = new User('user-container', {
+                onLogin: () => {
+                    console.log('Login realizado com sucesso');
+                },
+                onLogout: () => {
+                    console.log('Logout realizado com sucesso');
+                },
+                onRegister: () => {
+                    console.log('Registro realizado com sucesso');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

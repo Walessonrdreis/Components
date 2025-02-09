@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saindo...</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="./api-usage.js"></script>
+    <script>
+        async function performLogout() {
+            try {
+                // Limpa todos os dados
+                localStorage.clear();
+                sessionStorage.clear();
+
+                // Remove todos os cookies
+                document.cookie.split(";").forEach(function (c) {
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                });
+
+                // Tenta fazer logout na API
+                const api = new ComponentAPI();
+                try {
+                    await api.logout();
+                } catch (error) {
+                    console.warn('Erro ao fazer logout na API:', error);
+                }
+
+                // Redireciona para a página de login
+                window.location.replace('./login.html');
+            } catch (error) {
+                console.error('Erro no logout:', error);
+                window.location.replace('./login.html');
+            }
+        }
+
+        // Executa o logout assim que a página carregar
+        document.addEventListener('DOMContentLoaded', performLogout);
+    </script>
+</head>
+
+<body>
+    <div
+        style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: Arial, sans-serif;">
+        <h1>Saindo do sistema...</h1>
+    </div>
+</body>
+
+</html>
