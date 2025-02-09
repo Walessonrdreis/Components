@@ -5,6 +5,10 @@
         constructor(config) {
             this.$container = $(`#${config.containerId}`);
             this.options = $.extend({}, AlunosList.defaults, config.options);
+            this.currentPage = 1;
+            this.itemsPerPage = 3;
+            this.totalPages = 1;
+            this.alunosData = [];
             this.init();
             this.carregarDisciplinas();
         }
@@ -50,6 +54,8 @@
         }
 
         renderAlunos(alunos) {
+            this.alunosData = alunos;
+            this.totalPages = Math.ceil(alunos.length / this.itemsPerPage);
             const $grid = this.$container.find('.alunos-grid');
             $grid.empty();
             console.log('AlunosList - renderAlunos data:', alunos);
@@ -64,8 +70,12 @@
                 return;
             }
 
+            const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+            const endIndex = startIndex + this.itemsPerPage;
+            const alunosPaginados = alunos.slice(startIndex, endIndex);
+
             const $row = $('<div>', { class: 'alunos-grid-row' });
-            alunos.forEach(aluno => {
+            alunosPaginados.forEach(aluno => {
                 const $cardContainer = $('<div>', {
                     class: 'aluno-card-wrapper',
                     id: `aluno-card-${aluno.id}`
@@ -84,6 +94,54 @@
             });
 
             $grid.append($row);
+            this.renderPagination();
+        }
+
+        renderPagination() {
+            // Remove paginação existente se houver
+            this.$container.find('.pagination-container').remove();
+
+            if (this.totalPages <= 1) return;
+
+            const $pagination = $('<div>', { class: 'pagination-container' });
+
+            // Botão anterior
+            const $prevButton = $('<button>', {
+                class: 'pagination-button',
+                html: '<i class="fas fa-chevron-left"></i>',
+                disabled: this.currentPage === 1
+            });
+
+            // Informação da página atual
+            const $pageInfo = $('<span>', {
+                class: 'pagination-page-info',
+                text: `${this.currentPage} de ${this.totalPages}`
+            });
+
+            // Botão próximo
+            const $nextButton = $('<button>', {
+                class: 'pagination-button',
+                html: '<i class="fas fa-chevron-right"></i>',
+                disabled: this.currentPage === this.totalPages
+            });
+
+            $pagination.append($prevButton, $pageInfo, $nextButton);
+            this.$container.append($pagination);
+
+            // Eventos dos botões
+            $prevButton.on('click', () => {
+                if (this.currentPage > 1) {
+                    this.currentPage--;
+                    this.renderAlunos(this.alunosData);
+                }
+            });
+
+            $nextButton.on('click', () => {
+                if (this.currentPage < this.totalPages) {
+                    this.currentPage++;
+                    this.renderAlunos(this.alunosData);
+                }
+            });
         }
 
         setupEventListeners() {
@@ -94,20 +152,15 @@
         }
 
         filterAlunos(searchTerm) {
-            const $cards = this.$container.find('.aluno-card');
             searchTerm = searchTerm.toLowerCase();
-
-            $cards.each(function () {
-                const $card = $(this);
-                const nome = $card.find('h4').text().toLowerCase();
-                const disciplina = $card.find('.disciplina').text().toLowerCase();
-
-                if (nome.includes(searchTerm) || disciplina.includes(searchTerm)) {
-                    $card.show();
-                } else {
-                    $card.hide();
-                }
+            const filteredAlunos = this.alunosData.filter(aluno => {
+                const nome = aluno.nome.toLowerCase();
+                const disciplina = (aluno.disciplina || '').toLowerCase();
+                return nome.includes(searchTerm) || disciplina.includes(searchTerm);
             });
+
+            this.currentPage = 1;
+            this.renderAlunos(filteredAlunos);
         }
 
         formatarData(data) {

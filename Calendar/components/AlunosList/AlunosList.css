@@ -691,3 +691,44 @@
     color: #333;
     font-weight: 600;
 }
+
+/* Estilos para a paginação */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    padding: 10px;
+}
+
+.pagination-button {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin: 0 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #666;
+}
+
+.pagination-button:hover:not(:disabled) {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.pagination-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-page-info {
+    margin: 0 15px;
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+.pagination-button i {
+    font-size: 14px;
+}
