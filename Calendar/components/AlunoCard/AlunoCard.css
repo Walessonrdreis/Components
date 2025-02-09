@@ -9,6 +9,7 @@
     align-items: center;
     transition: all 0.3s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    height: 400px;
 }
 
 .aluno-card:hover {
@@ -36,6 +37,17 @@
     color: #28a745;
     margin: 0;
     font-size: 0.9rem;
+}
+
+.aluno-info .matricula {
+    font-size: 0.9rem;
+    color: #333;
+    margin: 0 0 8px 0;
+    display: block !important;
+    font-weight: bold;
+    background-color: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 4px;
 }
 
 .aluno-actions {

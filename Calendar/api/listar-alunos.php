@@ -9,6 +9,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $controller = new AgendamentoController();
     $alunos = $controller->listarAlunos();
     
+    error_log('Resposta da API listar-alunos: ' . print_r($alunos, true));
+    
     echo json_encode($alunos);
 }
 ?> 

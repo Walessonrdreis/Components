@@ -108,19 +108,19 @@ class AgendamentoController {
                 SELECT DISTINCT
                     a.id,
                     a.nome,
+                    IFNULL(a.matricula, 'Não informada') as matricula,
                     d.nome as disciplina,
                     MIN(ag.data_aula) as proxima_aula
                 FROM alunos a
                 LEFT JOIN agendamentos ag ON a.id = ag.aluno_id
                 LEFT JOIN disciplinas d ON ag.disciplina_id = d.id
-                WHERE ag.data_aula >= CURRENT_DATE
-                    OR ag.data_aula IS NULL
-                GROUP BY a.id, a.nome, d.nome
+                GROUP BY a.id, a.nome, a.matricula, d.nome
                 ORDER BY a.nome
             ");
             
             $stmt->execute();
             $alunos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            error_log(print_r($alunos, true));
             
             return ['success' => true, 'alunos' => $alunos];
         } catch (Exception $e) {

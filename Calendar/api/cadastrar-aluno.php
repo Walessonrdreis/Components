@@ -51,6 +51,24 @@ try {
         }
 
         $alunoId = $conn->lastInsertId();
+        $maxAttempts = 10;
+        do {
+            $matricula = mt_rand(1000, 9999);
+            $stmtCheck = $conn->prepare("SELECT id FROM alunos WHERE matricula = :matricula");
+            $stmtCheck->execute([':matricula' => $matricula]);
+            $existe = $stmtCheck->fetch();
+            $maxAttempts--;
+        } while ($existe && $maxAttempts > 0);
+
+        if ($existe) {
+            throw new Exception("Não foi possível gerar uma matrícula única. Tente novamente.");
+        }
+
+        $stmtUpdate = $conn->prepare("UPDATE alunos SET matricula = :matricula WHERE id = :id");
+        $stmtUpdate->execute([
+            ':matricula' => $matricula,
+            ':id' => $alunoId
+        ]);
 
         // Se a disciplina for informada, busca seu ID
         $disciplinaId = null;

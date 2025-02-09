@@ -31,6 +31,7 @@
             fetch('api/listar-alunos.php')
                 .then(response => response.json())
                 .then(data => {
+                    console.log('AlunosList - loadAlunos response:', data);
                     if (data.success) {
                         this.renderAlunos(data.alunos);
                     } else {
@@ -51,6 +52,7 @@
         renderAlunos(alunos) {
             const $grid = this.$container.find('.alunos-grid');
             $grid.empty();
+            console.log('AlunosList - renderAlunos data:', alunos);
 
             if (alunos.length === 0) {
                 $grid.html(`
@@ -63,6 +65,7 @@
             }
 
             alunos.forEach(aluno => {
+                console.log('Criando card para aluno:', aluno);
                 const $card = $('<div>', {
                     class: 'aluno-card-container',
                     id: `aluno-card-${aluno.id}`
@@ -136,6 +139,9 @@
                             <div class="info-aluno-container">
                                 <div class="info-aluno-detalhes">
                                     <h3><i class="fas fa-user-circle"></i> ${aluno.nome}</h3>
+                                     <div class="matricula-container">
+                                    Matrícula: ${aluno.matricula || 'Não informada'}
+                                    </div>
                                     <p><i class="fas fa-book"></i> Disciplina: ${aluno.disciplina || 'Sem disciplina'}</p>
                                 </div>
                             </div>
