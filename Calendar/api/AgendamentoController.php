@@ -136,10 +136,13 @@ class AgendamentoController {
                     a.id,
                     a.nome,
                     a.email,
-                    d.nome as disciplina
+                    a.matricula,
+                    d.nome as disciplina,
+                    p.nome as professor
                 FROM alunos a
                 LEFT JOIN agendamentos ag ON a.id = ag.aluno_id
                 LEFT JOIN disciplinas d ON ag.disciplina_id = d.id
+                LEFT JOIN professores p ON ag.professor_id = p.id
                 WHERE a.id = :aluno_id
                 LIMIT 1
             ");
@@ -154,12 +157,16 @@ class AgendamentoController {
             // Busca aulas do aluno
             $stmt = $this->conn->prepare("
                 SELECT 
-                    data_aula,
-                    horario,
-                    status
-                FROM agendamentos
-                WHERE aluno_id = :aluno_id
-                ORDER BY data_aula, horario
+                    ag.data_aula,
+                    ag.horario,
+                    ag.status,
+                    p.nome as professor,
+                    d.nome as disciplina
+                FROM agendamentos ag
+                LEFT JOIN professores p ON ag.professor_id = p.id
+                LEFT JOIN disciplinas d ON ag.disciplina_id = d.id
+                WHERE ag.aluno_id = :aluno_id
+                ORDER BY ag.data_aula, ag.horario
             ");
             $stmt->bindParam(':aluno_id', $aluno_id);
             $stmt->execute();

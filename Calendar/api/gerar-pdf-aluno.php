@@ -14,12 +14,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['aluno_id'])) {
         
         if ($dados['success']) {
             // Cria uma nova instância do TCPDF
-            $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8');
+            $pdf = new TCPDF('L', 'mm', 'A4', true, 'UTF-8');
             
             // Configurações básicas
             $pdf->SetCreator('Sistema de Aulas');
             $pdf->SetAuthor('Sistema de Agendamento');
-            $pdf->SetTitle('Dados do Aluno - ' . $dados['aluno']['nome']);
+            $pdf->SetTitle('Agenda do Aluno - ' . $dados['aluno']['nome']);
             
             // Remove cabeçalho e rodapé
             $pdf->setPrintHeader(false);
@@ -27,12 +27,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['aluno_id'])) {
             
             // Configura margens (left, top, right)
             $pdf->SetMargins(15, 15, 15);
+            $pdf->SetAutoPageBreak(TRUE, 15);
             
             // Adiciona página
             $pdf->AddPage();
             
             // Define fonte
-            $pdf->SetFont('helvetica', '', 10);
+            $pdf->SetFont('helvetica', '', 12);
+
+            // Configura o locale para português
+            setlocale(LC_TIME, 'pt_BR', 'pt_BR.utf-8', 'portuguese');
+            date_default_timezone_set('America/Sao_Paulo');
+
+            // Caminho base para as imagens
+            $base_path = 'F:/xampp/htdocs/Components/Calendar';
+            $logo_path = $base_path . '/assets/img/logo.jpg';
+            $arvore_path = $base_path . '/assets/img/arvore-musical.jpg';
+
+            // Adiciona logo no topo
+            if (file_exists($logo_path)) {
+                $pdf->Image($logo_path, 120, 15, 50, 0, 'JPEG');
+            }
+
+            // Função para traduzir dias da semana
+            function traduzirDiaSemana($dia_ingles) {
+                $dias = [
+                    'Monday'    => 'Segunda-feira',
+                    'Tuesday'   => 'Terça-feira',
+                    'Wednesday' => 'Quarta-feira',
+                    'Thursday'  => 'Quinta-feira',
+                    'Friday'    => 'Sexta-feira',
+                    'Saturday'  => 'Sábado',
+                    'Sunday'    => 'Domingo'
+                ];
+                return $dias[$dia_ingles] ?? $dia_ingles;
+            }
 
             // Conteúdo do PDF
             $html = '
@@ -41,97 +70,150 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['aluno_id'])) {
             <head>
                 <style>
                     body {
-                        font-family: Arial, sans-serif;
-                        line-height: 1.6;
+                        font-family: helvetica;
+                        line-height: 1.3;
                     }
-                    h1 {
-                        color: #0066cc;
+                    .header {
+                        text-align: center;
+                        margin-bottom: 15px;
+                    }
+                    .header h1 {
                         font-size: 24px;
-                        border-bottom: 2px solid #0066cc;
-                        padding-bottom: 10px;
-                        margin-bottom: 20px;
+                        font-weight: bold;
+                        color: #000;
+                        margin: 3px 0;
+                        text-align: center;
+                    }
+                    .header h2 {
+                        font-size: 18px;
+                        font-weight: bold;
+                        color: #000;
+                        margin: 3px 0;
                     }
                     .aluno-info {
-                        background-color: #f8f9fa;
-                        padding: 15px;
-                        border-radius: 5px;
-                        margin-bottom: 30px;
-                        border-left: 4px solid #0066cc;
+                        font-size: 12px;
+                        width: 80%;
+                     
                     }
-                    .aluno-info p {
-                        margin: 5px 0;
-                        color: #333;
+                
+                    .aluno-info table {
+                        width: 100%;
+                        border: none;
+                        
                     }
-                    .info-label {
-                        font-weight: bold;
-                        color: #666;
-                        display: inline-block;
-                        width: 120px;
+                    .aluno-info td {
+                        border: none;
+                        border-bottom: solid 1px #000;
+                        padding: 0;
+                        margin: 0 auto;
+                        
+                    }
+                    .aluno-info .matricula {
+                        text-align: right;
                     }
                     table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        margin-top: 20px;
+                        width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+                    }
+                 th {
+                    background-color:rgb(166, 156, 156);
+                    color: #333;
+        }
+                    th, td {
+                      border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
                     }
                     th {
-                        background-color: #0066cc;
-                        color: white;
-                        padding: 10px;
-                        text-align: left;
+                        background-color: #fff;
+                        font-weight: bold;
                     }
-                    td {
-                        padding: 8px;
-                        border-bottom: 1px solid #ddd;
+                    .col-aula {
+                        text-align: center;
+                        width: 45px;
                     }
-                    tr:nth-child(even) {
-                        background-color: #f8f9fa;
+                    .col-data {
+                        width: 70px;
                     }
-                    .status-agendado { color: #28a745; }
-                    .status-cancelado { color: #dc3545; }
-                    .status-realizado { color: #0066cc; }
+                    .col-dia {
+                        width: 110px;
+                    }
+                    .col-hora {
+                        width: 60px;
+                    }
+                    .col-prof {
+                        width: 150px;
+                    }
+                    .col-instr {
+                        width: 150px;
+                    }
+                    .col-assinatura {
+                        width: auto;
+                        min-width: 180px;
+                    }
                 </style>
             </head>
             <body>
-                <h1>Relatório de Aulas</h1>
-                <div class="aluno-info">
-                    <h2>Informações do Aluno</h2>
-                    <p><span class="info-label">Nome:</span> ' . htmlspecialchars($dados['aluno']['nome']) . '</p>
-                    <p><span class="info-label">Email:</span> ' . htmlspecialchars($dados['aluno']['email']) . '</p>
-                    <p><span class="info-label">Disciplina:</span> ' . 
-                        (htmlspecialchars($dados['aluno']['disciplina']) ?: 'Não definida') . '</p>
+                <div class="header">
+                    <h1>Escola de Música Tutti Sonora</h1>
+                    <h2>IASD Central Taguatinga</h2>
                 </div>
 
-                <h2>Aulas Agendadas</h2>
-                <table>
+                <div class="aluno-info">
+                    <table>
+                        <tr class="aluno-info-table">
+                            <td>Agenda do(a) aluno(a): ' . htmlspecialchars($dados['aluno']['nome']) . '</td>
+                            <td class="matricula">Matrícula: ' . str_pad($dados['aluno']['matricula'], 2, '0', STR_PAD_LEFT) . '</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <table cellpadding="4">
                     <thead>
                         <tr>
-                            <th width="33%">Data</th>
-                            <th width="33%">Horário</th>
-                            <th width="34%">Status</th>
+                            <th class="col-aula">Aula</th>
+                            <th class="col-data">Data</th>
+                            <th class="col-dia">Dia</th>
+                            <th class="col-hora">Hora</th>
+                            <th class="col-prof">Professora</th>
+                            <th class="col-instr">Instrumento</th>
+                            <th class="col-assinatura">Assinatura Prof.ª / Aluno(a)</th>
                         </tr>
                     </thead>
                     <tbody>';
 
+            $aula_count = 1;
             foreach ($dados['aulas'] as $aula) {
-                $statusClass = 'status-' . strtolower($aula['status']);
+                $data = new DateTime($aula['data_aula']);
+                $dia_semana = traduzirDiaSemana($data->format('l'));
+                
                 $html .= '<tr>
-                    <td>' . date('d/m/Y', strtotime($aula['data_aula'])) . '</td>
-                    <td>' . date('H:i', strtotime($aula['horario'])) . '</td>
-                    <td class="' . $statusClass . '">' . ucfirst($aula['status']) . '</td>
+                    <td class="col-aula">' . $aula_count . '</td>
+                    <td class="col-data">' . $data->format('d-m-y') . '</td>
+                    <td class="col-dia">' . $dia_semana . '</td>
+                    <td class="col-hora">' . date('H:i', strtotime($aula['horario'])) . '</td>
+                    <td class="col-prof">Avyen Aramás Melgaço</td>
+                    <td class="col-instr">' . htmlspecialchars($aula['disciplina'] ?: 'PIANO CLÁSSICO') . '</td>
+                    <td class="col-assinatura">&nbsp;</td>
                 </tr>';
+                $aula_count++;
             }
 
             $html .= '
                     </tbody>
-                </table>
-                <div style="margin-top: 30px; font-size: 12px; color: #666; text-align: center;">
-                    <p>Relatório gerado em ' . date('d/m/Y H:i') . '</p>
-                </div>
-            </body>
-            </html>';
+                </table>';
             
             // Adiciona o conteúdo HTML ao PDF
             $pdf->writeHTML($html, true, false, true, false, '');
+            
+            // Adiciona árvore musical no rodapé
+            if (file_exists($arvore_path)) {
+                $pdf->Image($arvore_path, 120, $pdf->GetY() + 10, 50, 0, 'JPEG');
+            }
             
             // Limpa qualquer saída anterior
             ob_end_clean();
@@ -144,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['aluno_id'])) {
             header('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT');
             
             // Saída do PDF
-            $pdf->Output('aluno_' . $dados['aluno']['id'] . '.pdf', 'I');
+            $pdf->Output('aluno_' . $dados['aluno']['matricula'] . '.pdf', 'I');
             exit;
         }
     } catch (Exception $e) {
