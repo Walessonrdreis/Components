@@ -145,8 +145,9 @@
                             <div class="info-aluno-container">
                                 <div class="info-aluno-detalhes">
                                     <h3><i class="fas fa-user-circle"></i> ${aluno.nome}</h3>
-                                     <div class="matricula-container">
-                                    Matrícula: ${aluno.matricula || 'Não informada'}
+                                    <div class="matricula-container">
+                                        <span class="matricula-label">Matrícula:</span>
+                                        <span class="matricula-valor">${aluno.matricula || 'Não informada'}</span>
                                     </div>
                                     <p><i class="fas fa-book"></i> Disciplina: ${aluno.disciplina || 'Sem disciplina'}</p>
                                 </div>

@@ -92,8 +92,6 @@
     font-size: 1.5rem;
 }
 
-
-
 .aluno-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
@@ -671,4 +669,25 @@
     width: 70%;
     text-align: left;
     align-self: center;
+}
+
+.matricula-container {
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.matricula-label {
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.matricula-valor {
+    color: #333;
+    font-weight: 600;
 }

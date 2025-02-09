@@ -183,6 +183,7 @@ class AgendamentoController {
                 SELECT 
                     a.id,
                     a.nome,
+                    a.matricula,
                     d.nome as disciplina
                 FROM alunos a
                 LEFT JOIN agendamentos ag ON a.id = ag.aluno_id
