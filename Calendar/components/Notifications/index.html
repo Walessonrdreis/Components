@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exemplo - Componente Notifications</title>
+</head>
+
+<body>
+    <h1>Exemplo do Componente Notifications</h1>
+    <div id="notificacoes" style="margin-bottom: 20px;"></div>
+    <h2>Exemplos Interativos</h2>
+    <button id="btnSimples">Exibir Notificação Simples</button>
+    <button id="btnComTipo">Exibir Notificação com Tipo (Sucesso)</button>
+    <button id="btnDesaparecer">Exibir Notificação Temporária</button>
+    <button id="btnConfirmacao">Exibir Confirmação</button>
+    <button id="btnFuturista">Exibir Confirmação Futurista</button>
+    <script type="module">
+        import Notifications from './index.js';
+        // Função para criar uma notificação com design aprimorado, botão de fechar e, se temporária, uma barra de progresso
+        function showNotification(text, extraClass, options = {}) {
+            console.log("Criando notificação: " + text);
+            const notification = document.createElement('div');
+            notification.className = 'notification' + (extraClass ? ' ' + extraClass : '');
+
+            // Botão de fechar
+            const closeButton = document.createElement('button');
+            closeButton.className = 'close';
+            closeButton.innerHTML = '&times;';
+            closeButton.addEventListener('click', () => {
+                notification.remove();
+                console.log('Notificação fechada.');
+            });
+            notification.appendChild(closeButton);
+
+            // Elemento para a mensagem
+            const message = document.createElement('p');
+            message.innerText = text;
+            notification.appendChild(message);
+
+            // Se a notificação for temporária, adicionar a barra de progresso
+            if (options.temporary) {
+                const progressBar = document.createElement('div');
+                progressBar.className = 'progress-bar';
+                notification.appendChild(progressBar);
+            }
+
+            document.getElementById('notificacoes').appendChild(notification);
+            return notification;
+        }
+        // Função para criar uma notificação de confirmação com botões 'Confirmar' e 'Cancelar'
+        function showConfirmationNotification(text, confirmCallback, cancelCallback) {
+            console.log("Criando notificação de confirmação: " + text);
+            const notification = document.createElement('div');
+            // Adiciona a classe 'notification' e uma classe extra para confirmação, se desejado
+            notification.className = 'notification confirmation';
+
+            // Opcional: botão de fechar que cancela a ação
+            const closeButton = document.createElement('button');
+            closeButton.className = 'close';
+            closeButton.innerHTML = '&times;';
+            closeButton.addEventListener('click', () => {
+                notification.remove();
+                if (typeof cancelCallback === 'function') {
+                    cancelCallback();
+                }
+                console.log('Notificação de confirmação fechada. Ação cancelada.');
+            });
+            notification.appendChild(closeButton);
+
+            // Elemento para a mensagem
+            const message = document.createElement('p');
+            message.innerText = text;
+            notification.appendChild(message);
+
+            // Container para os botões de ação
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.style.display = 'flex';
+            buttonsContainer.style.justifyContent = 'flex-end';
+            buttonsContainer.style.gap = '10px';
+            buttonsContainer.style.marginTop = '10px';
+
+            // Botão Cancelar
+            const cancelButton = document.createElement('button');
+            cancelButton.innerText = 'Cancelar';
+            cancelButton.style.padding = '5px 10px';
+            cancelButton.style.border = 'none';
+            cancelButton.style.backgroundColor = '#dc3545';
+            cancelButton.style.color = 'white';
+            cancelButton.style.borderRadius = '4px';
+            cancelButton.style.cursor = 'pointer';
+            cancelButton.addEventListener('click', () => {
+                notification.remove();
+                if (typeof cancelCallback === 'function') {
+                    cancelCallback();
+                }
+                console.log('Ação cancelada.');
+            });
+
+            // Botão Confirmar
+            const confirmButton = document.createElement('button');
+            confirmButton.innerText = 'Confirmar';
+            confirmButton.style.padding = '5px 10px';
+            confirmButton.style.border = 'none';
+            confirmButton.style.backgroundColor = '#28a745';
+            confirmButton.style.color = 'white';
+            confirmButton.style.borderRadius = '4px';
+            confirmButton.style.cursor = 'pointer';
+            confirmButton.addEventListener('click', () => {
+                notification.remove();
+                if (typeof confirmCallback === 'function') {
+                    confirmCallback();
+                }
+                console.log('Ação confirmada.');
+            });
+
+            buttonsContainer.appendChild(cancelButton);
+            buttonsContainer.appendChild(confirmButton);
+            notification.appendChild(buttonsContainer);
+
+            document.getElementById('notificacoes').appendChild(notification);
+            return notification;
+        }
+        // Função para criar uma notificação futurista de confirmação com design futurista
+        function showFuturisticConfirmationNotification(text, confirmCallback, cancelCallback) {
+            console.log("Criando notificação futurista de confirmação: " + text);
+            const notification = document.createElement('div');
+            // Adiciona as classes 'notification', 'futuristic' e 'confirmation'
+            notification.className = 'notification futuristic confirmation';
+
+            // Botão de fechar que cancela a ação
+            const closeButton = document.createElement('button');
+            closeButton.className = 'close';
+            closeButton.innerHTML = '&times;';
+            closeButton.addEventListener('click', () => {
+                notification.remove();
+                if (typeof cancelCallback === 'function') {
+                    cancelCallback();
+                }
+                console.log('Notificação futurista de confirmação fechada. Ação cancelada.');
+            });
+            notification.appendChild(closeButton);
+
+            // Elemento para a mensagem
+            const message = document.createElement('p');
+            message.innerText = text;
+            notification.appendChild(message);
+
+            // Container para os botões de ação
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.style.display = 'flex';
+            buttonsContainer.style.justifyContent = 'flex-end';
+            buttonsContainer.style.gap = '10px';
+            buttonsContainer.style.marginTop = '10px';
+
+            // Botão Cancelar
+            const cancelButton = document.createElement('button');
+            cancelButton.innerText = 'Cancelar';
+            cancelButton.style.padding = '5px 10px';
+            cancelButton.style.border = 'none';
+            cancelButton.style.backgroundColor = '#dc3545';
+            cancelButton.style.color = 'white';
+            cancelButton.style.borderRadius = '4px';
+            cancelButton.style.cursor = 'pointer';
+            cancelButton.addEventListener('click', () => {
+                notification.remove();
+                if (typeof cancelCallback === 'function') {
+                    cancelCallback();
+                }
+                console.log('Ação futurista cancelada.');
+            });
+
+            // Botão Confirmar
+            const confirmButton = document.createElement('button');
+            confirmButton.innerText = 'Confirmar';
+            confirmButton.style.padding = '5px 10px';
+            confirmButton.style.border = 'none';
+            confirmButton.style.backgroundColor = '#28a745';
+            confirmButton.style.color = 'white';
+            confirmButton.style.borderRadius = '4px';
+            confirmButton.style.cursor = 'pointer';
+            confirmButton.addEventListener('click', () => {
+                notification.remove();
+                if (typeof confirmCallback === 'function') {
+                    confirmCallback();
+                }
+                console.log('Ação futurista confirmada.');
+            });
+
+            buttonsContainer.appendChild(cancelButton);
+            buttonsContainer.appendChild(confirmButton);
+            notification.appendChild(buttonsContainer);
+
+            document.getElementById('notificacoes').appendChild(notification);
+            return notification;
+        }
+        // Exemplo de notificação simples
+        document.getElementById('btnSimples').addEventListener('click', () => {
+            console.log('Botão "Notificação Simples" clicado.');
+            showNotification('Esta é uma notificação simples!');
+        });
+        // Exemplo de notificação com tipo específico (sucesso)
+        document.getElementById('btnComTipo').addEventListener('click', () => {
+            console.log('Botão "Notificação com Tipo (Sucesso)" clicado.');
+            showNotification('Operação realizada com sucesso!', 'notification-success');
+        });
+        // Exemplo de notificação temporária que desaparece após 3 segundos
+        document.getElementById('btnDesaparecer').addEventListener('click', () => {
+            console.log('Botão "Notificação Temporária" clicado.');
+            const notification = showNotification('Esta notificação desaparecerá em 3 segundos!', '', { temporary: true });
+            setTimeout(() => {
+                notification.remove();
+                console.log('Notificação removida automaticamente.');
+            }, 3000);
+        });
+        // Exemplo de notificação de confirmação
+        document.getElementById('btnConfirmacao').addEventListener('click', () => {
+            console.log('Botão "Notificação de Confirmação" clicado.');
+            showConfirmationNotification(
+                'Você realmente deseja excluir este item?',
+                () => { console.log('Item excluído com sucesso.'); },
+                () => { console.log('Exclusão cancelada.'); }
+            );
+        });
+        // Exemplo de notificação futurista de confirmação
+        document.getElementById('btnFuturista').addEventListener('click', () => {
+            console.log('Botão "Notificação Futurista de Confirmação" clicado.');
+            showFuturisticConfirmationNotification(
+                'Você realmente deseja executar a ação futurista?',
+                () => { console.log('Ação futurista executada com sucesso.'); },
+                () => { console.log('Ação futurista cancelada.'); }
+            );
+        });
+        // Exemplo inicial exibido ao carregar a página
+        showNotification('Esta é uma notificação de exemplo carregada automaticamente!');
+        console.log('Exemplos do Componente Notifications carregados.');
+    </script>
+</body>
+
+</html>
