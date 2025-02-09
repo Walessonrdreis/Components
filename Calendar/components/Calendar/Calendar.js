@@ -151,15 +151,64 @@
                     const dateStr = $dayElement.data('date');
                     if (!dateStr) return;
 
+                    // Remove qualquer diálogo existente
+                    $('.holiday-confirm-dialog').remove();
+
                     if (this.selectedDates.has(dateStr)) {
                         this.selectedDates.delete(dateStr);
                         $dayElement.removeClass('selected');
+                        this.updateSelectedDatesList();
+                        return;
+                    }
+
+                    const key = this.getHolidayKey(dateStr);
+                    const holidayName = HOLIDAYS[key];
+
+                    if (holidayName) {
+                        // Cria o diálogo de confirmação
+                        const $dialog = $('<div>', {
+                            class: 'holiday-confirm-dialog'
+                        }).append(
+                            $('<div>', {
+                                class: 'title',
+                                text: `Essa data é ${holidayName}, tem certeza?`
+                            }),
+                            $('<div>', {
+                                class: 'buttons'
+                            }).append(
+                                $('<button>', {
+                                    class: 'confirm-btn',
+                                    text: 'Sim',
+                                    click: () => {
+                                        this.selectedDates.add(dateStr);
+                                        $dayElement.addClass('selected');
+                                        this.updateSelectedDatesList();
+                                        $dialog.remove();
+                                    }
+                                }),
+                                $('<button>', {
+                                    class: 'cancel-btn',
+                                    text: 'Não',
+                                    click: () => {
+                                        $dialog.remove();
+                                    }
+                                })
+                            )
+                        );
+
+                        $dayElement.append($dialog);
+
+                        // Fecha o diálogo ao clicar fora
+                        $(document).one('click', (e) => {
+                            if (!$(e.target).closest('.holiday-confirm-dialog, .calendar-day').length) {
+                                $dialog.remove();
+                            }
+                        });
                     } else {
                         this.selectedDates.add(dateStr);
                         $dayElement.addClass('selected');
+                        this.updateSelectedDatesList();
                     }
-
-                    this.updateSelectedDatesList();
                 });
 
             // Listener para o toggle de horário padrão
