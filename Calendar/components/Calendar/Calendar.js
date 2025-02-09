@@ -33,7 +33,7 @@
             this.defaultTime = this.options.defaultTime || '09:00';
             this.useDefaultTime = false;
             this.holidayConfirmed = false;
-            this.currentDate = new Date();
+            this.currentDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
             this.init();
         }
 
@@ -106,6 +106,13 @@
 
                 if (this.isToday(year, month, day)) {
                     $dayElement.addClass('today');
+                    const todayDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
+                    const formattedToday = todayDate.toLocaleDateString('pt-BR', {
+                        weekday: 'long',
+                        day: '2-digit',
+                        month: 'long'
+                    });
+                    $dayElement.attr('title', `Hoje - ${formattedToday}`);
                 }
 
                 if (this.selectedDates.has(dateStr)) {
@@ -123,9 +130,9 @@
         }
 
         isToday(year, month, day) {
-            const today = new Date();
+            const today = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
             return day === today.getDate() &&
-                month === (today.getMonth() + 1) &&
+                month === today.getMonth() &&
                 year === today.getFullYear();
         }
 
