@@ -26,9 +26,9 @@
 
 .form-group input,
 .form-group select {
-    width: 100%;
+    width: 98%;
     padding: 10px;
-    border: 1px solid var(--border-color);
+
     border-radius: var(--radius);
     font-size: 1em;
     transition: border-color 0.2s, box-shadow 0.2s;
@@ -191,7 +191,7 @@
 
     .form-group input,
     .form-group select {
-        width: 100%;
+        width: 90%;
     }
 
     .form-buttons {

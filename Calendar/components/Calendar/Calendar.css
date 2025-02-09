@@ -224,7 +224,7 @@ h1 {
     background: #ffffff;
     border-radius: 12px;
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-    
+
 }
 
 .selected-dates-container h3 {
@@ -268,14 +268,15 @@ h1 {
     .calendar {
         min-width: 280px;
         box-sizing: border-box;
-        
-        
+
+
     }
+
     .calendar-container {
         height: 100%;
-       
+
     }
-    
+
 
     .current-month {
         font-size: 1.1rem;
