@@ -64,20 +64,26 @@
                 return;
             }
 
+            const $row = $('<div>', { class: 'alunos-grid-row' });
             alunos.forEach(aluno => {
-                console.log('Criando card para aluno:', aluno);
-                const $card = $('<div>', {
-                    class: 'aluno-card-container',
+                const $cardContainer = $('<div>', {
+                    class: 'aluno-card-wrapper',
                     id: `aluno-card-${aluno.id}`
                 });
-                $card.alunoCard({
+
+                $cardContainer.alunoCard({
                     aluno: aluno,
                     onVerAulas: (alunoId) => this.verAulas(alunoId),
                     onVisualizarPDF: (alunoId) => this.visualizarPDF(alunoId),
-                    onEditar: (alunoId) => this.editarAluno(alunoId)
+                    onEditar: (alunoId) => this.editarAluno(alunoId),
+                    animationDuration: 300,
+                    tooltipDelay: 200
                 });
-                $grid.append($card);
+
+                $row.append($cardContainer);
             });
+
+            $grid.append($row);
         }
 
         setupEventListeners() {

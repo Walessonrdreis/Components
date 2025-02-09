@@ -1,8 +1,8 @@
 .alunos-list-container {
-    background: #fff;
     padding: 20px;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .alunos-list-header {
@@ -10,12 +10,15 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .alunos-list-header h3 {
     margin: 0;
     color: #333;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
+    font-weight: 600;
 }
 
 .alunos-search {
@@ -23,43 +26,73 @@
 }
 
 .search-input {
-    width: 80%;
+    width: 100%;
     padding: 8px 12px;
-    border: 1px solid #ddd;
+    border: 1px solid #e0e0e0;
     border-radius: 6px;
-    font-size: 0.9em;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--aluno-card-primary);
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
 }
 
 .alunos-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.alunos-grid-row {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-    padding: 20px 0;
+    gap: 16px;
+    align-items: stretch;
 }
 
-.aluno-card {
-    background: #fff;
-    border-radius: var(--radius);
-    padding: 20px;
-    box-shadow: var(--shadow);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    border: 1px solid var(--border-color);
-    animation: fadeIn 0.3s ease-out;
-}
-
-.aluno-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
+.aluno-card-wrapper {
     height: 100%;
-    background: var(--primary-color);
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    min-height: 200px;
 }
+
+.no-alunos {
+    text-align: center;
+    padding: 40px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    color: #666;
+}
+
+.no-alunos i {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    color: #999;
+}
+
+.no-alunos p {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: #fff3f3;
+    border: 1px solid #f44336;
+    border-radius: 8px;
+    color: #f44336;
+}
+
+.error-message i {
+    font-size: 1.5rem;
+}
+
+
 
 .aluno-card:hover {
     transform: translateY(-5px);
@@ -187,12 +220,6 @@
     text-align: center;
     padding: 20px;
     color: #666;
-}
-
-.error-message {
-    text-align: center;
-    color: #dc3545;
-    padding: 20px;
 }
 
 .modal-aulas,
@@ -427,12 +454,16 @@
 @media (max-width: 768px) {
     .alunos-list-header {
         flex-direction: column;
-        gap: 15px;
+        gap: 12px;
     }
 
     .alunos-search {
         flex: 1;
-        width: 80%;
+        width: 100%;
+    }
+
+    .alunos-grid-row {
+        grid-template-columns: 1fr;
     }
 
     .aluno-card {

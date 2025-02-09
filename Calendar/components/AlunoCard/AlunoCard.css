@@ -1,110 +1,179 @@
+/* AlunoCard Component Styles */
+:root {
+    --aluno-card-primary: #2196f3;
+    --aluno-card-secondary: #f5f5f5;
+    --aluno-card-text: #333;
+    --aluno-card-border: #e0e0e0;
+    --aluno-card-shadow: rgba(0, 0, 0, 0.1);
+    --aluno-card-hover-shadow: rgba(0, 0, 0, 0.15);
+    --aluno-card-success: #4caf50;
+    --aluno-card-warning: #ff9800;
+    --aluno-card-error: #f44336;
+}
+
 .aluno-card {
-    background-color: #fff;
-    border: 1px solid #dee2e6;
+    background: #fff;
     border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    box-shadow: 0 2px 4px var(--aluno-card-shadow);
+    margin: 12px;
+    padding: 16px;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    height: 400px;
+    position: relative;
+    border: 1px solid var(--aluno-card-border);
 }
 
 .aluno-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px var(--aluno-card-hover-shadow);
 }
 
 .aluno-info {
     flex: 1;
+    padding-right: 16px;
 }
 
-.aluno-info h4 {
-    margin: 0 0 8px 0;
-    color: #333;
-    font-size: 1.1rem;
+.aluno-nome {
+    color: var(--aluno-card-text);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    line-height: 1.4;
 }
 
-.aluno-info .disciplina {
-    color: #6c757d;
-    margin: 0 0 5px 0;
+.matricula-container {
+    background-color: var(--aluno-card-secondary);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.matricula-label {
+    color: #666;
     font-size: 0.9rem;
+    font-weight: 500;
 }
 
-.aluno-info .proxima-aula {
-    color: #28a745;
-    margin: 0;
-    font-size: 0.9rem;
+.matricula-valor {
+    color: var(--aluno-card-text);
+    font-weight: 600;
 }
 
-.aluno-info .matricula {
-    font-size: 0.9rem;
-    color: #333;
-    margin: 0 0 8px 0;
-    display: block !important;
-    font-weight: bold;
-    background-color: #f8f9fa;
-    padding: 4px 8px;
-    border-radius: 4px;
+.disciplina,
+.proxima-aula {
+    color: #666;
+    font-size: 0.95rem;
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.disciplina i,
+.proxima-aula i {
+    color: var(--aluno-card-primary);
+    font-size: 1rem;
 }
 
 .aluno-actions {
     display: flex;
-    gap: 10px;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--aluno-card-border);
 }
 
-.aluno-actions button {
-    background: none;
-    border: none;
+.btn-action {
+    background: transparent;
+    border: 1px solid var(--aluno-card-border);
+    border-radius: 6px;
     padding: 8px;
     cursor: pointer;
-    border-radius: 4px;
     transition: all 0.2s ease;
-    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
 }
 
-.aluno-actions button:hover {
-    background-color: #f8f9fa;
+.btn-action:hover {
+    background: var(--aluno-card-secondary);
+    border-color: var(--aluno-card-primary);
 }
 
-.aluno-actions button[data-tooltip]:hover::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #333;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    white-space: nowrap;
-    z-index: 1000;
+.btn-action i {
+    color: var(--aluno-card-primary);
+    font-size: 1rem;
 }
 
-.btn-pdf i {
-    color: #dc3545;
+.btn-action.btn-clicked {
+    transform: scale(0.95);
 }
 
-.btn-ver-aulas i {
-    color: #007bff;
+/* Tooltip customizado */
+.tooltip {
+    font-size: 0.85rem;
+    font-weight: 500;
 }
 
-.btn-editar i {
-    color: #ffc107;
+/* Estados de loading e erro */
+.aluno-card-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    background: var(--aluno-card-secondary);
+    border-radius: 8px;
 }
 
-@media (max-width: 576px) {
+.aluno-card-error {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: #fff3f3;
+    border: 1px solid var(--aluno-card-error);
+    border-radius: 8px;
+    color: var(--aluno-card-error);
+}
+
+.aluno-card-error i {
+    font-size: 1.5rem;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
     .aluno-card {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
+        margin: 8px;
+        padding: 12px;
     }
 
-    .aluno-actions {
-        width: 100%;
-        justify-content: flex-end;
+    .aluno-nome {
+        font-size: 1.1rem;
     }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* Animações */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.aluno-card {
+    animation: fadeIn 0.3s ease-out;
 }
