@@ -553,3 +553,9 @@ input:checked+.toggle-slider:before {
 .holiday-confirm-dialog .cancel-btn:hover {
     background-color: #eee;
 }
+
+.calendar-day.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}

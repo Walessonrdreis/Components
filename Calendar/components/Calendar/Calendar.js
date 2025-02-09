@@ -119,6 +119,16 @@
                     $dayElement.addClass('selected');
                 }
 
+                // Início das modificações para desabilitar dias anteriores ao dia atual
+                let dayDate = new Date(year, month, day);
+                let current = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
+                current.setHours(0, 0, 0, 0);
+                dayDate.setHours(0, 0, 0, 0);
+                if (dayDate < current || dayDate.getDay() === 6) {
+                    $dayElement.addClass('disabled');
+                }
+                // Fim das modificações
+
                 $daysContainer.append($dayElement);
             }
 
@@ -148,6 +158,9 @@
                 })
                 .on('click', '.calendar-day', (e) => {
                     const $dayElement = $(e.currentTarget);
+                    if ($dayElement.hasClass('disabled')) {
+                        return;
+                    }
                     const dateStr = $dayElement.data('date');
                     if (!dateStr) return;
 
