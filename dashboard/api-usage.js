@@ -149,7 +149,10 @@ class ComponentAPI {
     }
 
     async register(data) {
-        return this.createUser(data);
+        return this.makeRequest('/register.php', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
     }
 
     async createAdmin(data) {

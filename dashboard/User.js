@@ -7,6 +7,7 @@ class User {
             onRegister: null,
             ...options
         };
+        this.api = new ComponentAPI();
         this.currentUser = null;
         this.init();
     }
@@ -276,16 +277,35 @@ class User {
             // Validar formulário
             this.validateRegisterForm(formData);
 
-            const response = await this.api.createUser({
+            // Mostra loading
+            Swal.fire({
+                title: 'Aguarde...',
+                text: 'Fazendo cadastro...',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            console.log('Tentando cadastro com:', {
+                name: formData.get('name'),
+                email: formData.get('email')
+            });
+
+            const response = await this.api.register({
                 name: formData.get('name'),
                 email: formData.get('email'),
-                password: formData.get('password')
+                password: formData.get('password'),
+                role: 'user'
             });
 
             if (response.success) {
-                // Armazena o token
+                console.log('Cadastro bem sucedido:', response.data);
+
+                // Armazena o token e dados do usuário
                 if (response.data && response.data.token) {
-                    localStorage.setItem('userToken', response.data.token);
+                    auth.setAuth(response.data.token, response.data.user);
                     this.currentUser = response.data.user;
 
                     await Swal.fire({
@@ -296,17 +316,17 @@ class User {
                         showConfirmButton: false
                     });
 
+                    // Aguarda um momento para garantir que os dados foram salvos
+                    await new Promise(resolve => setTimeout(resolve, 100));
+
                     // Redireciona para a home
+                    console.log('Redirecionando para home...');
                     window.location.href = './home.html';
                 } else {
                     throw new Error('Token não encontrado na resposta');
                 }
             } else {
-                await Swal.fire({
-                    title: 'Erro!',
-                    text: response.message || 'Erro ao fazer cadastro',
-                    icon: 'error'
-                });
+                throw new Error(response.message || 'Erro ao fazer cadastro');
             }
         } catch (error) {
             console.error('Erro no cadastro:', error);
