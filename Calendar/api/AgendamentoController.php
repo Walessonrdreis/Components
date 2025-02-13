@@ -137,12 +137,10 @@ class AgendamentoController {
                     a.nome,
                     a.email,
                     a.matricula,
-                    d.nome as disciplina,
-                    p.nome as professor
+                    d.nome as disciplina
                 FROM alunos a
                 LEFT JOIN agendamentos ag ON a.id = ag.aluno_id
                 LEFT JOIN disciplinas d ON ag.disciplina_id = d.id
-                LEFT JOIN professores p ON ag.professor_id = p.id
                 WHERE a.id = :aluno_id
                 LIMIT 1
             ");
@@ -160,10 +158,8 @@ class AgendamentoController {
                     ag.data_aula,
                     ag.horario,
                     ag.status,
-                    p.nome as professor,
                     d.nome as disciplina
                 FROM agendamentos ag
-                LEFT JOIN professores p ON ag.professor_id = p.id
                 LEFT JOIN disciplinas d ON ag.disciplina_id = d.id
                 WHERE ag.aluno_id = :aluno_id
                 ORDER BY ag.data_aula, ag.horario

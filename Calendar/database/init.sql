@@ -5,8 +5,18 @@ DROP TABLE IF EXISTS aluno_disciplina;
 DROP TABLE IF EXISTS aulas;
 DROP TABLE IF EXISTS alunos;
 DROP TABLE IF EXISTS disciplinas;
+DROP TABLE IF EXISTS professores;
 
 -- Agora criamos as tabelas na ordem correta
+CREATE TABLE IF NOT EXISTS professores (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE,
+    telefone VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS alunos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
@@ -50,12 +60,14 @@ CREATE TABLE IF NOT EXISTS agendamentos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     aluno_id INT NOT NULL,
     disciplina_id INT NULL,
+    professor_id INT NULL,
     data_aula DATE NOT NULL,
     horario TIME NOT NULL,
     status ENUM('agendado', 'cancelado', 'realizado') DEFAULT 'agendado',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (aluno_id) REFERENCES alunos(id),
     FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id),
+    FOREIGN KEY (professor_id) REFERENCES professores(id),
     INDEX idx_data_aula (data_aula)
 );
 
