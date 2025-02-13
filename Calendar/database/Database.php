@@ -1,10 +1,17 @@
 <?php
 class Database {
-    private $host = 'localhost';
-    private $db_name = 'calendario_aulas';
-    private $username = 'admin';
-    private $password = 'admin123';
+    private $host;
+    private $db_name;
+    private $username;
+    private $password;
     private $conn;
+
+    public function __construct() {
+        $this->host = getenv('DB_HOST') ?: 'db';
+        $this->db_name = getenv('DB_NAME') ?: 'calendar';
+        $this->username = getenv('DB_USER') ?: 'user';
+        $this->password = getenv('DB_PASSWORD') ?: 'password';
+    }
 
     public function getConnection() {
         $this->conn = null;
@@ -18,7 +25,10 @@ class Database {
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->conn->exec("set names utf8");
         } catch(PDOException $e) {
-            echo "Erro na conexão: " . $e->getMessage();
+            header('Content-Type: application/json');
+            http_response_code(500);
+            echo json_encode(['error' => 'Erro na conexão com o banco de dados: ' . $e->getMessage()]);
+            exit;
         }
 
         return $this->conn;

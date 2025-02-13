@@ -1,8 +1,8 @@
-CREATE DATABASE IF NOT EXISTS calendario_aulas;
-USE calendario_aulas;
-
 -- Primeiro, vamos dropar as tabelas na ordem correta (por causa das foreign keys)
+DROP TABLE IF EXISTS presencas;
 DROP TABLE IF EXISTS agendamentos;
+DROP TABLE IF EXISTS aluno_disciplina;
+DROP TABLE IF EXISTS aulas;
 DROP TABLE IF EXISTS alunos;
 DROP TABLE IF EXISTS disciplinas;
 
@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS alunos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE,
+    telefone VARCHAR(20),
+    matricula VARCHAR(20) UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -18,7 +20,7 @@ CREATE TABLE IF NOT EXISTS alunos (
 CREATE TABLE IF NOT EXISTS disciplinas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
-    professor VARCHAR(255),
+    descricao TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -29,6 +31,7 @@ CREATE TABLE IF NOT EXISTS aulas (
     data_aula DATE NOT NULL,
     hora_inicio TIME NOT NULL,
     hora_fim TIME NOT NULL,
+    descricao TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id) ON DELETE CASCADE
@@ -67,26 +70,13 @@ CREATE TABLE IF NOT EXISTS presencas (
     FOREIGN KEY (aula_id) REFERENCES aulas(id) ON DELETE CASCADE
 );
 
--- Insere as disciplinas de piano
+-- Inserir dados iniciais
 INSERT INTO disciplinas (nome) VALUES 
     ('Piano Clássico'),
     ('Piano Popular'),
     ('Musicalização com Piano'),
-    ('Piano Clássico e Popular');
-
--- Inserir tipos de aula padrão
-INSERT INTO disciplinas (nome) VALUES 
+    ('Piano Clássico e Popular'),
     ('Individual'),
     ('Grupo'),
     ('Online'),
     ('Intensivo');
-
--- Alterar nome da tabela tipos_aula para disciplinas
-RENAME TABLE tipos_aula TO disciplinas;
-
--- Atualizar referências na tabela agendamentos
-ALTER TABLE agendamentos 
-DROP FOREIGN KEY agendamentos_ibfk_2,
-CHANGE COLUMN tipo_aula_id disciplina_id INT,
-ADD CONSTRAINT agendamentos_ibfk_2 
-FOREIGN KEY (disciplina_id) REFERENCES disciplinas(id); 
